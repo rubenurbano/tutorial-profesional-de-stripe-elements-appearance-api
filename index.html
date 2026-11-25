@@ -1,0 +1,3723 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stripe Elements: Appearance API — Tutorial Profesional</title>
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --card: #0f172a;
+    --card-alt: #131d36;
+    --border: #1e3a5f;
+    --text: #e2e8f0;
+    --muted: #94a3b8;
+    --accent: #38bdf8;
+    --accent-2: #14b8a6;
+    --accent-glow: rgba(56, 189, 248, 0.22);
+    --danger: #f43f5e;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --code-bg: #060913;
+    --nav-h: 60px;
+    --font-scale: 1;
+    --radius: 14px;
+  }
+
+  html[data-theme="light"] {
+    --bg: #f1f5f9;
+    --card: #ffffff;
+    --card-alt: #f8fafc;
+    --border: #cbd5e1;
+    --text: #0f172a;
+    --muted: #475569;
+    --accent: #0284c7;
+    --accent-2: #0d9488;
+    --accent-glow: rgba(2, 132, 199, 0.14);
+    --danger: #be123c;
+    --success: #047857;
+    --warning: #b45309;
+    --code-bg: #1e293b;
+  }
+
+  * {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  html {
+    font-size: calc(16px * var(--font-scale));
+    scroll-behavior: smooth;
+  }
+
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.65;
+    overflow-x: hidden;
+    padding-top: calc(var(--nav-h) + 10px);
+    padding-bottom: 84px;
+  }
+
+  /* Barra de progreso */
+  #readingProgress {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 3px;
+    width: 0%;
+    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    z-index: 60;
+    transition: width 0.15s ease-out;
+  }
+
+  /* Navegación superior fija */
+  header.topbar {
+    position: fixed;
+    top: 3px;
+    left: 0;
+    right: 0;
+    height: var(--nav-h);
+    background: rgba(10, 14, 26, 0.94);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border);
+    z-index: 40;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 10px;
+  }
+
+  html[data-theme="light"] header.topbar {
+    background: rgba(255, 255, 255, 0.95);
+  }
+
+  .nav-logo-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: #060b19;
+    overflow: hidden;
+  }
+
+  nav.tabs-bar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    flex: 1;
+    padding: 4px 0;
+  }
+
+  nav.tabs-bar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 42px;
+    padding: 0 13px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--text);
+    font-size: 0.85rem;
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s, color 0.2s, transform 0.1s;
+    flex-shrink: 0;
+  }
+
+  .chip:hover, .chip:focus-visible {
+    border-color: var(--accent);
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+  }
+
+  .chip.active {
+    background: var(--accent-glow);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  /* Panel Lateral Índice (#dr) */
+  #dr {
+    position: fixed;
+    top: calc(var(--nav-h) + 3px);
+    left: 0;
+    bottom: 0;
+    width: min(330px, 88vw);
+    background: #0f172a;
+    border-right: 1px solid #1e3a5f;
+    transform: translateX(-105%);
+    transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+    z-index: 45;
+    overflow-y: auto;
+    padding: 12px;
+    box-shadow: 12px 0 32px rgba(0, 0, 0, 0.55);
+  }
+
+  #dr.o {
+    transform: translateX(0);
+  }
+
+  .drawer-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 8px 12px;
+    border-bottom: 1px solid #1e3a5f;
+    margin-bottom: 8px;
+    color: #94a3b8;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  #dr a {
+    display: flex;
+    align-items: center;
+    padding: 11px 12px;
+    border-radius: 10px;
+    color: #e2e8f0;
+    text-decoration: none;
+    cursor: pointer;
+    min-height: 44px;
+    font-size: 0.92rem;
+    font-weight: 500;
+    margin-bottom: 4px;
+    transition: background 0.15s, color 0.15s;
+  }
+
+  #dr a:hover, #dr a:focus-visible {
+    background: rgba(255, 255, 255, 0.08);
+    outline: 2px solid #38bdf8;
+  }
+
+  #dr a.on {
+    background: rgba(0, 212, 255, 0.16);
+    color: #38bdf8;
+    font-weight: 700;
+    border: 1px solid rgba(56, 189, 248, 0.35);
+  }
+
+  /* Barra de herramientas secundaria */
+  .toolbar {
+    max-width: 960px;
+    margin: 8px auto 14px;
+    padding: 0 12px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .search-box {
+    flex: 1 1 220px;
+    display: flex;
+    align-items: center;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 0 10px;
+    min-height: 42px;
+  }
+
+  .search-box input {
+    width: 100%;
+    border: 0;
+    background: transparent;
+    color: var(--text);
+    font-size: 0.95rem;
+    padding: 8px 6px;
+    outline: none;
+  }
+
+  .tool-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .tool-btn {
+    min-height: 42px;
+    min-width: 42px;
+    padding: 0 11px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--text);
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+  }
+
+  .tool-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  #searchResultsPanel {
+    max-width: 960px;
+    margin: 0 auto 14px;
+    padding: 0 12px;
+    display: none;
+  }
+
+  .search-results-card {
+    background: var(--card);
+    border: 1px solid var(--accent);
+    border-radius: var(--radius);
+    padding: 14px;
+  }
+
+  .search-hit {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: var(--card-alt);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 12px;
+    margin-top: 8px;
+    color: var(--text);
+    cursor: pointer;
+  }
+
+  .search-hit small {
+    color: var(--accent);
+    font-weight: 700;
+    display: block;
+    margin-bottom: 3px;
+  }
+
+  /* Contenedor principal */
+  main {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 0 12px;
+  }
+
+  section.tab-panel {
+    display: none;
+    animation: fadeIn 0.25s ease-out;
+  }
+
+  section.tab-panel.active {
+    display: block;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Hero INICIO */
+  .hero-box {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 18px;
+    margin-bottom: 18px;
+    box-shadow: 0 14px 36px rgba(0, 0, 0, 0.25);
+  }
+
+  .hero-title-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+
+  .hero-logo-badge {
+    width: 52px;
+    height: 52px;
+    flex-shrink: 0;
+    border-radius: 14px;
+    border: 1px solid var(--accent);
+    background: #060b19;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 18px var(--accent-glow);
+  }
+
+  .hero-title-row h1 {
+    margin: 0;
+    font-size: clamp(1.25rem, 4.8vw, 2rem);
+    line-height: 1.25;
+    color: var(--text);
+  }
+
+  .hero-title-row .author-tag {
+    color: var(--accent);
+    font-weight: 800;
+  }
+
+  .hero-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+    align-items: center;
+  }
+
+  @media (min-width: 760px) {
+    .hero-grid {
+      grid-template-columns: 320px 1fr;
+    }
+  }
+
+  .svg-stage {
+    width: 100%;
+    max-width: 340px;
+    margin: 0 auto;
+    aspect-ratio: 4 / 5;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    background: #060a14;
+    position: relative;
+  }
+
+  .svg-stage svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  .meta-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 12px 0;
+  }
+
+  .pill {
+    background: var(--card-alt);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 5px 10px;
+    font-size: 0.8rem;
+    color: var(--muted);
+  }
+
+  .pill strong {
+    color: var(--text);
+  }
+
+  /* Tarjetas y tipografía */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+
+  h2 {
+    margin: 0 0 12px;
+    font-size: clamp(1.2rem, 4.2vw, 1.55rem);
+    color: var(--accent);
+    line-height: 1.3;
+  }
+
+  h3 {
+    margin: 18px 0 8px;
+    font-size: clamp(1.02rem, 3.6vw, 1.22rem);
+    color: var(--text);
+  }
+
+  h4 {
+    margin: 14px 0 6px;
+    font-size: 0.98rem;
+    color: var(--accent-2);
+  }
+
+  p {
+    margin: 0 0 12px;
+  }
+
+  ul, ol {
+    margin: 0 0 14px;
+    padding-left: 20px;
+  }
+
+  li {
+    margin-bottom: 6px;
+  }
+
+  code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    background: rgba(56, 189, 248, 0.12);
+    color: var(--accent);
+    padding: 2px 6px;
+    border-radius: 6px;
+    font-size: 0.88em;
+    word-break: break-word;
+  }
+
+  /* Bloques de código y copiar */
+  .code-block {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    margin: 12px 0 16px;
+    overflow: hidden;
+  }
+
+  .code-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    background: rgba(30, 58, 95, 0.35);
+    border-bottom: 1px solid var(--border);
+    font-size: 0.8rem;
+    color: #94a3b8;
+    font-weight: 700;
+  }
+
+  .copy-btn {
+    min-height: 36px;
+    padding: 4px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--accent);
+    background: rgba(56, 189, 248, 0.14);
+    color: #e2e8f0;
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .copy-btn:hover {
+    background: var(--accent);
+    color: #0a0e1a;
+  }
+
+  pre {
+    margin: 0;
+    padding: 12px;
+    overflow-x: auto;
+    color: #e2e8f0;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 0.84rem;
+    line-height: 1.5;
+  }
+
+  pre code {
+    background: transparent;
+    color: inherit;
+    padding: 0;
+    word-break: normal;
+  }
+
+  /* Avisos y alertas */
+  .callout {
+    border-left: 4px solid var(--accent);
+    background: var(--card-alt);
+    border-radius: 0 12px 12px 0;
+    padding: 12px 14px;
+    margin: 14px 0;
+  }
+
+  .callout.warn {
+    border-left-color: var(--danger);
+    background: rgba(244, 63, 94, 0.08);
+  }
+
+  .callout.tip {
+    border-left-color: var(--success);
+    background: rgba(16, 185, 129, 0.08);
+  }
+
+  /* Tablas adaptables */
+  .table-wrap {
+    width: 100%;
+    overflow-x: auto;
+    margin: 12px 0 16px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 480px;
+    font-size: 0.88rem;
+  }
+
+  th, td {
+    padding: 10px 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+
+  th {
+    background: rgba(30, 58, 95, 0.35);
+    color: var(--accent);
+    font-weight: 700;
+  }
+
+  tr:last-child td {
+    border-bottom: none;
+  }
+
+  /* Enlaces externos con botón obligatorio */
+  .ext-link-box {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    background: var(--card-alt);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 10px 12px;
+    margin: 8px 0;
+  }
+
+  .ext-link-info {
+    flex: 1 1 200px;
+    min-width: 0;
+  }
+
+  .ext-link-url {
+    display: block;
+    font-size: 0.82rem;
+    color: var(--accent);
+    word-break: break-all;
+    text-decoration: underline;
+  }
+
+  .ext-link-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .btn-open-new {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 40px;
+    padding: 6px 12px;
+    border-radius: 8px;
+    background: var(--accent);
+    color: #0a0e1a;
+    font-weight: 700;
+    font-size: 0.82rem;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+  }
+
+  .btn-open-new:hover {
+    opacity: 0.92;
+  }
+
+  /* Acordeones Q&A y desplegables */
+  .qa-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  .btn-action {
+    min-height: 44px;
+    padding: 8px 16px;
+    border-radius: 10px;
+    border: 1px solid var(--accent);
+    background: var(--card-alt);
+    color: var(--accent);
+    font-weight: 700;
+    font-size: 0.9rem;
+    cursor: pointer;
+  }
+
+  .btn-action.primary {
+    background: var(--accent);
+    color: #0a0e1a;
+  }
+
+  details.qa-item {
+    background: var(--card-alt);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    margin-bottom: 10px;
+    overflow: hidden;
+  }
+
+  details.qa-item summary {
+    padding: 13px 14px;
+    cursor: pointer;
+    font-weight: 700;
+    list-style: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    min-height: 48px;
+  }
+
+  details.qa-item summary::-webkit-details-marker {
+    display: none;
+  }
+
+  details.qa-item summary::after {
+    content: "+";
+    font-size: 1.3rem;
+    color: var(--accent);
+    font-weight: 800;
+    flex-shrink: 0;
+  }
+
+  details.qa-item[open] summary::after {
+    content: "−";
+  }
+
+  .qa-body {
+    padding: 0 14px 14px;
+    border-top: 1px solid var(--border);
+    padding-top: 12px;
+    color: var(--text);
+  }
+
+  /* Checklist interactivo */
+  .check-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px;
+    border-radius: 10px;
+    background: var(--card-alt);
+    border: 1px solid var(--border);
+    margin-bottom: 8px;
+    cursor: pointer;
+    min-height: 44px;
+  }
+
+  .check-item input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    margin-top: 2px;
+    accent-color: var(--accent);
+    flex-shrink: 0;
+  }
+
+  /* Simulador interactivo Appearance API en Práctica */
+  .sandbox-preview {
+    border-radius: 16px;
+    padding: 18px;
+    border: 1px solid var(--border);
+    transition: all 0.25s ease;
+    margin-top: 12px;
+  }
+
+  .sandbox-controls {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+
+  .sandbox-field label {
+    display: block;
+    font-size: 0.78rem;
+    color: var(--muted);
+    margin-bottom: 4px;
+    font-weight: 700;
+  }
+
+  .sandbox-field select, .sandbox-field input[type="color"], .sandbox-field input[type="range"] {
+    width: 100%;
+    min-height: 40px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--card-alt);
+    color: var(--text);
+    padding: 4px 8px;
+  }
+
+  /* Navegación inferior fija por pestaña */
+  .tab-footer-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-top: 24px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+  }
+
+  .nav-step-btn {
+    flex: 1;
+    min-height: 48px;
+    padding: 10px 14px;
+    border-radius: 12px;
+    border: 1px solid var(--accent);
+    background: var(--card);
+    color: var(--text);
+    font-weight: 700;
+    font-size: 0.9rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+
+  .nav-step-btn.next {
+    background: var(--accent);
+    color: #0a0e1a;
+  }
+
+  .nav-step-btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+    border-color: var(--border);
+  }
+
+  /* Botones flotantes arrastrables (INICIO y ARRIBA) */
+  .float-btn {
+    position: fixed;
+    z-index: 50;
+    min-width: 52px;
+    min-height: 52px;
+    padding: 0 14px;
+    border-radius: 999px;
+    border: 2px solid var(--accent);
+    background: rgba(15, 23, 42, 0.95);
+    color: #e2e8f0;
+    font-weight: 800;
+    font-size: 0.82rem;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+    cursor: grab;
+    touch-action: none;
+    user-select: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+  }
+
+  .float-btn:active {
+    cursor: grabbing;
+    transform: scale(0.96);
+  }
+
+  #floatHomeBtn {
+    left: 12px;
+    bottom: 16px;
+    border-color: #14b8a6;
+  }
+
+  #floatTopBtn {
+    right: 12px;
+    bottom: 16px;
+  }
+
+  /* Notificación Toast */
+  #toast {
+    position: fixed;
+    bottom: 82px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: #0f172a;
+    color: #38bdf8;
+    border: 1px solid #38bdf8;
+    padding: 10px 18px;
+    border-radius: 999px;
+    font-size: 0.88rem;
+    font-weight: 700;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s, transform 0.25s;
+    z-index: 70;
+    max-width: 90vw;
+    text-align: center;
+  }
+
+  #toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  /* Créditos */
+  .credits-author {
+    font-size: clamp(1.7rem, 6vw, 2.5rem);
+    font-weight: 900;
+    color: var(--accent);
+    margin: 12px 0 4px;
+    line-height: 1.2;
+  }
+
+  /* Animaciones SVG */
+  @keyframes pulseNode {
+    0%, 100% { transform: scale(1); opacity: 0.85; }
+    50% { transform: scale(1.18); opacity: 1; }
+  }
+  @keyframes dashFlow {
+    to { stroke-dashoffset: -120; }
+  }
+  @keyframes floatCard {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-7px); }
+  }
+  @keyframes spinSlow {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+  @keyframes spinReverse {
+    from { transform: rotate(360deg); }
+    to { transform: rotate(0deg); }
+  }
+  @keyframes sweepBeam {
+    0%, 100% { opacity: 0.15; transform: translateX(-18px); }
+    50% { opacity: 0.65; transform: translateX(18px); }
+  }
+
+  .svg-paused * {
+    animation-play-state: paused !important;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .svg-anim-el {
+      animation: none !important;
+    }
+  }
+
+  /* Estilos de impresión A4 */
+  @media print {
+    @page {
+      size: A4 portrait;
+      margin: 14mm 12mm;
+    }
+    body {
+      background: #ffffff !important;
+      color: #000000 !important;
+      padding: 0 !important;
+      font-size: 11pt !important;
+    }
+    header.topbar, #dr, .toolbar, #searchResultsPanel, .float-btn, .tab-footer-nav, .copy-btn, .qa-controls, #readingProgress, #toast {
+      display: none !important;
+    }
+    section.tab-panel {
+      display: block !important;
+      opacity: 1 !important;
+      margin-bottom: 20px;
+    }
+    .card, .hero-box, details.qa-item, .callout, .ext-link-box {
+      background: #ffffff !important;
+      color: #000000 !important;
+      border: 1px solid #999999 !important;
+      box-shadow: none !important;
+      break-inside: avoid;
+    }
+    pre, .code-block {
+      background: #f4f4f4 !important;
+      color: #000000 !important;
+      border: 1px solid #888888 !important;
+      white-space: pre-wrap !important;
+      word-break: break-word !important;
+    }
+    h1, h2, h3, h4, .credits-author, .author-tag {
+      color: #000000 !important;
+    }
+    .svg-stage {
+      max-width: 240px !important;
+      border: 1px solid #000 !important;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div id="readingProgress"></div>
+
+<!-- Plantilla SVG Única Oculta (Hero + Créditos) -->
+<template id="heroSvgTemplate">
+  <svg viewBox="0 0 400 500" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Ilustración vectorial animada de Stripe Elements Appearance API: interfaz de pago segura transformando sus variables de color, tipografía y bordes en tiempo real">
+    <defs>
+      <linearGradient id="__GID_bgGrad__" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#060b19"/>
+        <stop offset="55%" stop-color="#0d1b36"/>
+        <stop offset="100%" stop-color="#071921"/>
+      </linearGradient>
+      <linearGradient id="__GID_cardGrad__" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#132544" stop-opacity="0.95"/>
+        <stop offset="100%" stop-color="#0b1528" stop-opacity="0.98"/>
+      </linearGradient>
+      <linearGradient id="__GID_stripeAccent__" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#38bdf8"/>
+        <stop offset="50%" stop-color="#14b8a6"/>
+        <stop offset="100%" stop-color="#818cf8"/>
+      </linearGradient>
+      <radialGradient id="__GID_orbGlow__" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.45"/>
+        <stop offset="60%" stop-color="#14b8a6" stop-opacity="0.12"/>
+        <stop offset="100%" stop-color="#060b19" stop-opacity="0"/>
+      </radialGradient>
+      <filter id="__GID_neonGlow__" x="-20%" y="-20%" width="140%" height="140%">
+        <feGaussianBlur stdDeviation="4" result="blur"/>
+        <feMerge>
+          <feMergeNode in="blur"/>
+          <feMergeNode in="SourceGraphic"/>
+        </feMerge>
+      </filter>
+    </defs>
+
+    <!-- Fondo profundo -->
+    <rect width="400" height="500" fill="url(#__GID_bgGrad__)"/>
+
+    <!-- Cuadrícula arquitectónica -->
+    <g stroke="#1e3a5f" stroke-width="0.7" opacity="0.38">
+      <line x1="0" y1="70" x2="400" y2="70"/>
+      <line x1="0" y1="150" x2="400" y2="150"/>
+      <line x1="0" y1="250" x2="400" y2="250"/>
+      <line x1="0" y1="350" x2="400" y2="350"/>
+      <line x1="0" y1="430" x2="400" y2="430"/>
+      <line x1="80" y1="0" x2="80" y2="500"/>
+      <line x1="200" y1="0" x2="200" y2="500"/>
+      <line x1="320" y1="0" x2="320" y2="500"/>
+    </g>
+
+    <!-- Resplandor central orbital -->
+    <circle cx="200" cy="245" r="165" fill="url(#__GID_orbGlow__)"/>
+
+    <!-- Anillos orbitales giratorios -->
+    <g transform="translate(200, 245)">
+      <circle r="142" fill="none" stroke="#38bdf8" stroke-width="1.2" stroke-dasharray="10 8 2 8" opacity="0.5" class="svg-anim-el" style="animation: spinSlow 28s linear infinite;"/>
+      <circle r="118" fill="none" stroke="#14b8a6" stroke-width="1.5" stroke-dasharray="24 12" opacity="0.45" class="svg-anim-el" style="animation: spinReverse 20s linear infinite;"/>
+    </g>
+
+    <!-- Líneas de flujo de datos desde servidor/tokens hacia el Payment Element -->
+    <g fill="none" stroke-width="2" filter="url(#__GID_neonGlow__)">
+      <path d="M 55 95 C 110 95, 110 155, 155 155" stroke="#38bdf8" stroke-dasharray="8 6" class="svg-anim-el" style="animation: dashFlow 4s linear infinite;"/>
+      <path d="M 345 95 C 290 95, 290 155, 245 155" stroke="#14b8a6" stroke-dasharray="8 6" class="svg-anim-el" style="animation: dashFlow 4.5s linear infinite;"/>
+      <path d="M 65 415 C 120 415, 120 355, 165 355" stroke="#818cf8" stroke-dasharray="8 6" class="svg-anim-el" style="animation: dashFlow 5s linear infinite;"/>
+      <path d="M 335 415 C 280 415, 280 355, 235 355" stroke="#38bdf8" stroke-dasharray="8 6" class="svg-anim-el" style="animation: dashFlow 3.8s linear infinite;"/>
+    </g>
+
+    <!-- Nodos de tokens Appearance API -->
+    <g font-family="monospace" font-size="10" font-weight="bold">
+      <!-- Token Variables -->
+      <rect x="22" y="72" width="88" height="28" rx="8" fill="#0f172a" stroke="#38bdf8" stroke-width="1.4"/>
+      <text x="66" y="90" fill="#38bdf8" text-anchor="middle">variables{}</text>
+      <!-- Token Rules -->
+      <rect x="290" y="72" width="88" height="28" rx="8" fill="#0f172a" stroke="#14b8a6" stroke-width="1.4"/>
+      <text x="334" y="90" fill="#14b8a6" text-anchor="middle">.Input:focus</text>
+      <!-- Token Theme -->
+      <rect x="22" y="402" width="88" height="28" rx="8" fill="#0f172a" stroke="#818cf8" stroke-width="1.4"/>
+      <text x="66" y="420" fill="#a5b4fc" text-anchor="middle">theme:'night'</text>
+      <!-- Token Security -->
+      <rect x="290" y="402" width="88" height="28" rx="8" fill="#0f172a" stroke="#38bdf8" stroke-width="1.4"/>
+      <text x="334" y="420" fill="#38bdf8" text-anchor="middle">pk_test_***</text>
+    </g>
+
+    <!-- Tarjeta central flotante: Payment Element UI -->
+    <g class="svg-anim-el" style="animation: floatCard 4.5s ease-in-out infinite;">
+      <rect x="78" y="132" width="244" height="236" rx="18" fill="url(#__GID_cardGrad__)" stroke="url(#__GID_stripeAccent__)" stroke-width="2"/>
+
+      <!-- Barra superior de la tarjeta -->
+      <circle cx="100" cy="154" r="4.5" fill="#f43f5e"/>
+      <circle cx="114" cy="154" r="4.5" fill="#f59e0b"/>
+      <circle cx="128" cy="154" r="4.5" fill="#10b981"/>
+      <text x="304" y="158" fill="#94a3b8" font-family="sans-serif" font-size="10" font-weight="bold" text-anchor="end">PAYMENT ELEMENT</text>
+      <line x1="92" y1="168" x2="308" y2="168" stroke="#1e3a5f" stroke-width="1"/>
+
+      <!-- Pestañas de métodos de pago (.Tab) -->
+      <rect x="94" y="178" width="66" height="28" rx="7" fill="#14b8a6" fill-opacity="0.22" stroke="#14b8a6" stroke-width="1.5"/>
+      <text x="127" y="196" fill="#5eead4" font-family="sans-serif" font-size="10" font-weight="bold" text-anchor="middle">Tarjeta</text>
+
+      <rect x="167" y="178" width="66" height="28" rx="7" fill="#0f172a" stroke="#334155" stroke-width="1"/>
+      <text x="200" y="196" fill="#94a3b8" font-family="sans-serif" font-size="10" text-anchor="middle">SEPA</text>
+
+      <rect x="240" y="178" width="66" height="28" rx="7" fill="#0f172a" stroke="#334155" stroke-width="1"/>
+      <text x="273" y="196" fill="#94a3b8" font-family="sans-serif" font-size="10" text-anchor="middle">Link</text>
+
+      <!-- Campo Número de Tarjeta (.Input) -->
+      <text x="95" y="222" fill="#cbd5e1" font-family="sans-serif" font-size="9.5" font-weight="bold">Número de tarjeta</text>
+      <rect x="94" y="227" width="212" height="30" rx="8" fill="#081021" stroke="#38bdf8" stroke-width="1.6"/>
+      <text x="104" y="246" fill="#e2e8f0" font-family="monospace" font-size="11">4242 •••• •••• 4242</text>
+      <rect x="268" y="234" width="28" height="16" rx="3" fill="#38bdf8" fill-opacity="0.25"/>
+      <text x="282" y="245" fill="#38bdf8" font-family="sans-serif" font-size="8" font-weight="bold" text-anchor="middle">VISA</text>
+
+      <!-- Campos Fecha y CVC -->
+      <text x="95" y="272" fill="#94a3b8" font-family="sans-serif" font-size="9.5">Caducidad</text>
+      <rect x="94" y="277" width="100" height="28" rx="8" fill="#081021" stroke="#334155" stroke-width="1.2"/>
+      <text x="104" y="295" fill="#cbd5e1" font-family="monospace" font-size="11">12 / 34</text>
+
+      <text x="206" y="272" fill="#94a3b8" font-family="sans-serif" font-size="9.5">CVC</text>
+      <rect x="206" y="277" width="100" height="28" rx="8" fill="#081021" stroke="#334155" stroke-width="1.2"/>
+      <text x="216" y="295" fill="#cbd5e1" font-family="monospace" font-size="11">888</text>
+
+      <!-- Botón de Pago -->
+      <rect x="94" y="318" width="212" height="34" rx="10" fill="url(#__GID_stripeAccent__)"/>
+      <text x="200" y="339" fill="#060b19" font-family="sans-serif" font-size="11.5" font-weight="900" text-anchor="middle">Pagar 24,99 € · Sandbox</text>
+    </g>
+
+    <!-- Partículas luminosas y destellos -->
+    <g fill="#38bdf8">
+      <circle cx="145" cy="115" r="3" class="svg-anim-el" style="animation: pulseNode 2.4s infinite;"/>
+      <circle cx="265" cy="118" r="2.5" fill="#14b8a6" class="svg-anim-el" style="animation: pulseNode 3.1s infinite;"/>
+      <circle cx="135" cy="390" r="2.8" fill="#818cf8" class="svg-anim-el" style="animation: pulseNode 2.8s infinite;"/>
+      <circle cx="275" cy="388" r="3.2" class="svg-anim-el" style="animation: pulseNode 2.2s infinite;"/>
+    </g>
+
+    <!-- Pie técnico dentro del SVG -->
+    <text x="200" y="472" fill="#94a3b8" font-family="sans-serif" font-size="10.5" font-weight="bold" letter-spacing="1.5" text-anchor="middle">APPEARANCE API · STRIPE ELEMENTS</text>
+  </svg>
+</template>
+
+<!-- Barra Superior Fija -->
+<header class="topbar">
+  <!-- Logo Tutoriales IA integrado en SVG -->
+  <div class="nav-logo-wrap" title="Tutoriales IA">
+    <svg viewBox="0 0 100 100" width="32" height="32" xmlns="http://www.w3.org/2000/svg" aria-label="Logo Tutoriales IA">
+      <defs>
+        <linearGradient id="navShieldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#38bdf8"/>
+          <stop offset="100%" stop-color="#818cf8"/>
+        </linearGradient>
+      </defs>
+      <path d="M50 8 C72 8 86 18 86 18 L86 48 C86 72 50 90 50 90 C50 90 14 72 14 48 L14 18 C14 18 28 8 50 8 Z" fill="#071226" stroke="url(#navShieldGrad)" stroke-width="5"/>
+      <path d="M46 24 C34 24 28 33 28 43 C28 53 35 61 46 61" fill="none" stroke="#38bdf8" stroke-width="4" stroke-linecap="round"/>
+      <path d="M54 24 C66 24 72 33 72 43 C72 53 65 61 54 61" fill="none" stroke="#a855f7" stroke-width="4" stroke-linecap="round"/>
+      <circle cx="50" cy="43" r="11" fill="#0f172a" stroke="#38bdf8" stroke-width="3"/>
+      <polygon points="47,38 56,43 47,48" fill="#38bdf8"/>
+      <text x="50" y="81" fill="#38bdf8" font-family="sans-serif" font-size="16" font-weight="900" text-anchor="middle">IA</text>
+    </svg>
+  </div>
+
+  <nav class="tabs-bar" aria-label="Navegación principal del tutorial">
+    <button class="chip" id="mb" aria-label="Abrir índice" aria-expanded="false">☰ Índice</button>
+    <button class="chip active" data-tab="0">Inicio</button>
+    <button class="chip" data-tab="1">Fundamentos Stripe</button>
+    <button class="chip" data-tab="2">Entorno Windows 11</button>
+    <button class="chip" data-tab="3">Primera Integración</button>
+    <button class="chip" data-tab="4">Dominar Appearance API</button>
+    <button class="chip" data-tab="5">10 Casos Prácticos</button>
+    <button class="chip" data-tab="6">10 Proyectos</button>
+    <button class="chip" data-tab="7">Prompts</button>
+    <button class="chip" data-tab="8">33 Preguntas (Q&amp;A)</button>
+    <button class="chip" data-tab="9">Errores y Diagnóstico</button>
+    <button class="chip" data-tab="10">Glosario</button>
+    <button class="chip" data-tab="11">Fuentes</button>
+    <button class="chip" data-tab="12">Créditos</button>
+  </nav>
+</header>
+
+<!-- Panel Lateral Índice (#dr) -->
+<aside id="dr" aria-label="Índice completo de secciones">
+  <div class="drawer-header">
+    <span>Índice del Tutorial</span>
+    <button id="closeDrawerBtn" style="background:none;border:none;color:#38bdf8;font-weight:bold;cursor:pointer;font-size:1rem;padding:4px 8px;">✕</button>
+  </div>
+  <div id="drawerLinks"></div>
+</aside>
+
+<!-- Barra de herramientas: Buscador, Tipografía, Tema, Imprimir -->
+<div class="toolbar">
+  <div class="search-box">
+    <span aria-hidden="true">🔍</span>
+    <input type="search" id="searchInput" placeholder="Buscar en todo el tutorial (ej. borderRadius, webhooks, .Input)..." aria-label="Buscar en el tutorial">
+  </div>
+  <div class="tool-group">
+    <button class="tool-btn" id="fontDecBtn" title="Reducir tamaño de letra" aria-label="Reducir tamaño de letra">A−</button>
+    <button class="tool-btn" id="fontIncBtn" title="Aumentar tamaño de letra" aria-label="Aumentar tamaño de letra">A+</button>
+    <button class="tool-btn" id="themeToggleBtn" title="Cambiar entre tema oscuro y claro" aria-label="Cambiar tema">🌓 Tema</button>
+    <button class="tool-btn" id="printBtn" title="Imprimir o guardar como PDF" aria-label="Imprimir o guardar como PDF">🖨️ PDF</button>
+  </div>
+</div>
+
+<!-- Resultados de búsqueda -->
+<div id="searchResultsPanel">
+  <div class="search-results-card">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <strong id="searchCountText">Resultados de búsqueda</strong>
+      <button id="clearSearchBtn" class="tool-btn" style="min-height:32px;padding:0 10px;">Cerrar</button>
+    </div>
+    <div id="searchHitsList"></div>
+  </div>
+</div>
+
+<main id="mainContent">
+
+  <!-- ========================================================= -->
+  <!-- PESTAÑA 0: INICIO                                         -->
+  <!-- ========================================================= -->
+  <section class="tab-panel active" data-t="Inicio">
+    <div class="hero-box">
+      <div class="hero-title-row">
+        <!-- Logo Tutoriales IA integrado en SVG a la izquierda del título -->
+        <div class="hero-logo-badge" title="Tutoriales IA">
+          <svg viewBox="0 0 100 100" width="42" height="42" xmlns="http://www.w3.org/2000/svg" aria-label="Emblema Tutoriales IA">
+            <defs>
+              <linearGradient id="heroLogoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#38bdf8"/>
+                <stop offset="100%" stop-color="#a855f7"/>
+              </linearGradient>
+            </defs>
+            <path d="M50 6 C74 6 88 17 88 17 L88 48 C88 74 50 93 50 93 C50 93 12 74 12 48 L12 17 C12 17 26 6 50 6 Z" fill="#060b19" stroke="url(#heroLogoGrad)" stroke-width="5"/>
+            <path d="M46 22 C33 22 26 32 26 42 C26 52 34 61 46 61" fill="none" stroke="#38bdf8" stroke-width="4" stroke-linecap="round"/>
+            <path d="M54 22 C67 22 74 32 74 42 C74 52 66 61 54 61" fill="none" stroke="#a855f7" stroke-width="4" stroke-linecap="round"/>
+            <circle cx="50" cy="42" r="12" fill="#0f172a" stroke="#38bdf8" stroke-width="3"/>
+            <polygon points="47,36 57,42 47,48" fill="#38bdf8"/>
+            <text x="50" y="83" fill="#38bdf8" font-family="sans-serif" font-size="16" font-weight="900" text-anchor="middle">IA</text>
+          </svg>
+        </div>
+        <h1>Tutorial Profesional de Stripe Elements: Appearance API <span class="author-tag">by Rubén Sbarsky</span></h1>
+      </div>
+
+      <div class="hero-grid">
+        <div class="svg-stage" id="heroSvgContainer"></div>
+        <div>
+          <p>Domina la personalización visual del <strong>Payment Element</strong> de Stripe desde cero hasta una arquitectura profesional en Windows 11, Node.js, Express y Stripe.js.</p>
+
+          <div class="meta-pills">
+            <span class="pill"><strong>Nivel:</strong> Desde cero a profesional</span>
+            <span class="pill"><strong>Entorno:</strong> Windows 11 · VS Code · Node.js LTS · Express</span>
+            <span class="pill"><strong>Fecha contraste:</strong> 24/11/2026</span>
+          </div>
+
+          <div class="callout">
+            <strong>Aviso de vigencia:</strong> Este curso se ha contrastado con la documentación oficial de Stripe consultada el <strong>24/11/2026</strong>. La documentación web puede cambiar. Antes de desplegar una integración comercial, vuelve a comprobar los enlaces oficiales de la pestaña Fuentes.
+          </div>
+
+          <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:14px;">
+            <button class="btn-action primary" onclick="navigateToTab(1)">Comenzar el curso →</button>
+            <button class="btn-action" id="ix">☰ Ver índice</button>
+            <button class="btn-action" id="toggleAnimBtn">⏸ Pausar animación</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>1. Qué vamos a aprender</h2>
+      <h3>Objetivo</h3>
+      <p>Al terminar podrás personalizar el aspecto del <strong>Payment Element</strong> de Stripe para que combine con la identidad visual de una web: colores, tipografía, espaciado, bordes, etiquetas y estados permitidos por Stripe.</p>
+      <p>No necesitas saber programar. Aprenderás lo suficiente de HTML, CSS, JavaScript, terminal y servidor para entender y modificar un proyecto real de demostración.</p>
+
+      <h3>Resultado concreto</h3>
+      <p>Construirás una página de pago de prueba llamada <strong>Taller Demo</strong> que:</p>
+      <ol>
+        <li>Se ejecuta en tu ordenador con Windows 11.</li>
+        <li>Solicita a un pequeño servidor la creación de un <code>PaymentIntent</code> de prueba.</li>
+        <li>Muestra el Payment Element de Stripe.</li>
+        <li>Aplica una configuración <strong>Appearance API</strong>.</li>
+        <li>Permite comparar temas y modificar variables y reglas.</li>
+        <li>Confirma un pago de prueba sin mover dinero real (importe fijo de demostración: <strong>24,99 EUR</strong>).</li>
+      </ol>
+
+      <h3>Herramientas necesarias</h3>
+      <ul>
+        <li>Windows 11.</li>
+        <li>Un navegador actualizado (Edge, Chrome o Firefox).</li>
+        <li>Visual Studio Code.</li>
+        <li>Node.js en versión LTS.</li>
+        <li>Una cuenta de Stripe y un entorno de pruebas (sandbox).</li>
+        <li>Conexión a Internet.</li>
+      </ul>
+
+      <h3>Qué queda fuera del alcance</h3>
+      <p>No construiremos una tienda completa, un sistema de inventario, facturación, suscripciones, impuestos, gestión de clientes, panel administrativo ni despliegue productivo. Tampoco certificaremos el cumplimiento normativo o PCI de un negocio. El proyecto enseña la integración básica necesaria para comprender Appearance API; no es una solución comercial lista para producción.</p>
+
+      <div class="callout tip">
+        <strong>Actividad inicial:</strong> Escribe en una nota qué marca ficticia te gustaría diseñar y qué tres colores la representarían.<br>
+        <strong>Comprobación:</strong> Debes poder explicar con tus palabras el resultado que vas a construir y distinguir entre personalizar el formulario y desarrollar todo un sistema de comercio electrónico.
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================= -->
+  <!-- PESTAÑA 1: FUNDAMENTOS STRIPE                             -->
+  <!-- ========================================================= -->
+  <section class="tab-panel" data-t="Fundamentos Stripe">
+    <div class="card">
+      <h2>2. Stripe explicado desde cero</h2>
+
+      <h3>2.1. ¿Qué es Stripe?</h3>
+      <p>Stripe es una plataforma de infraestructura de pagos. Permite a empresas aceptar pagos en sitios web y aplicaciones, gestionar métodos de pago y consultar operaciones desde un panel llamado <strong>Dashboard</strong>. Detrás de un pago hay una operación coordinada entre el navegador, el servidor de la empresa y los sistemas de Stripe.</p>
+
+      <h3>2.2. ¿Qué es Stripe Elements?</h3>
+      <p>Stripe Elements es una colección de componentes de interfaz preparados por Stripe para recoger información de pago (formulario de tarjeta, selector de métodos de pago o campo de dirección). La ventaja es que no tienes que programar desde cero la captura y validación de los datos sensibles de la tarjeta: Stripe aloja los campos sensibles en componentes seguros.</p>
+
+      <h3>2.3. ¿Qué es un Element?</h3>
+      <p>Un <strong>Element</strong> es uno de esos componentes individuales. Por ejemplo, el Payment Element es un componente que puede mostrar varios métodos de pago disponibles para el cliente.</p>
+
+      <h3>2.4. ¿Qué es Payment Element?</h3>
+      <p>Payment Element es un componente integrable en una web. Puede mostrar distintos métodos de pago, adaptar las opciones según la configuración de la cuenta y el contexto, validar entradas y presentar mensajes de error. No lo confundas con Stripe Checkout:</p>
+      <ul>
+        <li><strong>Payment Element:</strong> componente integrado dentro de tu propia página. Tú construyes la experiencia que lo rodea.</li>
+        <li><strong>Stripe Checkout:</strong> experiencia de checkout de Stripe, alojada o integrada según la modalidad elegida. Tiene otro modelo de integración y personalización.</li>
+      </ul>
+
+      <h3>2.5. ¿Qué es Stripe.js?</h3>
+      <p>Stripe.js es la biblioteca JavaScript de Stripe para el navegador. Permite inicializar Stripe, crear Elements, mostrar componentes y confirmar pagos desde el cliente. No sustituye al servidor: el navegador nunca debe contener la clave secreta de Stripe.</p>
+
+      <h3>2.6. ¿Qué es Appearance API?</h3>
+      <p>Es la interfaz de configuración que permite definir cómo se ven determinados Elements compatibles. Se pasa como opción <code>appearance</code> al crear la instancia de Elements. Piensa en un automóvil: Stripe proporciona el sistema de seguridad y los mecanismos internos del formulario; Appearance API te permite elegir parte de su acabado exterior, sin desmontar el motor.</p>
+
+      <h3>2.7. Cómo se relaciona todo (Arquitectura)</h3>
+      <div class="code-block">
+        <div class="code-header"><span>Flujo Cliente — Servidor — Stripe</span></div>
+        <pre><code>CLIENTE
+  |
+  v
+NAVEGADOR: página HTML + CSS + JavaScript
+  |
+  +---- Stripe.js ---- crea Elements y Payment Element
+  |                         |
+  |                         +---- Appearance API configura el aspecto
+  |
+  +---- petición HTTPS ----> SERVIDOR DE TU EMPRESA
+                                  |
+                                  +---- usa clave secreta
+                                  |
+                                  v
+                              API DE STRIPE
+                                  |
+                                  +---- crea PaymentIntent
+                                  |
+                                  v
+NAVEGADOR recibe client secret y confirma el pago con Stripe.js</code></pre>
+      </div>
+
+      <div class="callout">
+        <strong>Término importante — PaymentIntent:</strong> Es el objeto de Stripe que representa el intento de realizar un pago y su ciclo de vida. El servidor crea el PaymentIntent y determina el importe. El navegador recibe su <code>client_secret</code>, que permite completar ese pago concreto. No es una clave secreta de cuenta, pero tampoco debe registrarse ni compartirse públicamente.
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>3. Qué significa personalizar la apariencia</h2>
+      <ul>
+        <li><strong>Tema (<code>theme</code>):</strong> Base visual predefinida. Stripe ofrece <code>stripe</code>, <code>night</code> y <code>flat</code>.</li>
+        <li><strong>Variables (<code>variables</code>):</strong> Valores generales que afectan a muchas partes del Element (<code>colorPrimary</code>, <code>colorBackground</code>, <code>colorText</code>, <code>fontFamily</code>, <code>borderRadius</code>, <code>spacingUnit</code>). Pertenecen al sistema de apariencia de Stripe, no son reglas CSS globales.</li>
+        <li><strong>Reglas (<code>rules</code>):</strong> Ajustan componentes concretos mediante selectores públicos documentados (<code>.Input</code>, <code>.Label</code>, <code>.Tab</code>, <code>.Input:focus</code>). Propiedades en <strong>camelCase</strong>: <code>boxShadow</code>, no <code>box-shadow</code>.</li>
+        <li><strong>Selectores:</strong> Identifican una parte pública del Element. No inventes selectores ni dependas de clases privadas.</li>
+        <li><strong>Estados visuales:</strong> Normal, enfocado, deshabilitado o inválido. No todos los estados existen para todas las clases.</li>
+        <li><strong>Diseño adaptable:</strong> El Payment Element se adapta a distintos tamaños de pantalla, pero tu página también debe ser responsive.</li>
+      </ul>
+
+      <h3>3.8. ¿Qué controla Stripe y qué controla tu web?</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Zona</th>
+              <th>Quién la controla</th>
+              <th>Ejemplos</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Exterior del formulario</td>
+              <td>Tu CSS</td>
+              <td>Ancho del contenedor, márgenes de página, fondo general, título y textos propios</td>
+            </tr>
+            <tr>
+              <td>Interior del Payment Element</td>
+              <td>Appearance API y Stripe</td>
+              <td>Variables, reglas y componentes públicos admitidos</td>
+            </tr>
+            <tr>
+              <td>Datos sensibles de pago</td>
+              <td>Stripe Elements</td>
+              <td>Campos de pago gestionados por Stripe (iframes seguros)</td>
+            </tr>
+            <tr>
+              <td>Importe y lógica de pedido</td>
+              <td>Tu servidor</td>
+              <td>Precio, moneda, condiciones comerciales</td>
+            </tr>
+            <tr>
+              <td>Estado real del pago</td>
+              <td>Stripe y tu servidor</td>
+              <td>Resultado confirmado, eventos y conciliación</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>4. Qué se puede hacer y qué no</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Personalización</th>
+              <th>¿Permitida?</th>
+              <th>Observaciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Elegir <code>stripe</code>, <code>night</code> o <code>flat</code></td>
+              <td><strong>Sí</strong></td>
+              <td>Temas documentados</td>
+            </tr>
+            <tr>
+              <td>Color principal y de fondo</td>
+              <td><strong>Sí</strong></td>
+              <td>Mediante variables compatibles</td>
+            </tr>
+            <tr>
+              <td>Tipografía</td>
+              <td><strong>Sí</strong></td>
+              <td><code>fontFamily</code> y opción <code>fonts</code> para fuentes personalizadas</td>
+            </tr>
+            <tr>
+              <td>Tamaño base del texto</td>
+              <td><strong>Sí</strong></td>
+              <td><code>fontSizeBase</code>; Stripe recomienda al menos 16 px para campos en móvil</td>
+            </tr>
+            <tr>
+              <td>Radio de bordes y espaciado</td>
+              <td><strong>Sí</strong></td>
+              <td><code>borderRadius</code>, <code>spacingUnit</code> y variables relacionadas</td>
+            </tr>
+            <tr>
+              <td>Estilo de <code>.Input</code> o <code>.Tab</code></td>
+              <td><strong>Sí</strong></td>
+              <td>Solo clases y propiedades admitidas</td>
+            </tr>
+            <tr>
+              <td>Cambiar el orden interno arbitrariamente</td>
+              <td><strong>No</strong></td>
+              <td>La disposición general del Element se mantiene consistente</td>
+            </tr>
+            <tr>
+              <td>Usar selectores privados o cualquier CSS</td>
+              <td><strong>No</strong></td>
+              <td>Solo nombres públicos y propiedades admitidas por clase</td>
+            </tr>
+            <tr>
+              <td>Aplicar Appearance API a <code>CardElement</code></td>
+              <td><strong>No</strong></td>
+              <td>Elements individuales usan el objeto <code>Style</code>, no Appearance API</td>
+            </tr>
+            <tr>
+              <td>Rediseñar la lógica del pago</td>
+              <td><strong>No</strong></td>
+              <td>Es responsabilidad de integración, no de apariencia</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="callout">
+        <strong>Distinción esencial:</strong> La guía de Appearance API consultada cubre integraciones de Elements con <strong>Payment Intents</strong>. Si utilizas Elements con <strong>Checkout Sessions</strong>, consulta su documentación específica. Aunque Stripe recomienda Checkout Sessions con Payment Element para la mayoría de integraciones nuevas, aquí utilizamos Payment Intents porque permite estudiar el flujo completo y controlar el importe y la lógica desde nuestro propio servidor.
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================= -->
+  <!-- PESTAÑA 2: ENTORNO WINDOWS 11                             -->
+  <!-- ========================================================= -->
+  <section class="tab-panel" data-t="Entorno Windows 11">
+    <div class="card">
+      <h2>6. Preparar Windows 11 desde cero</h2>
+
+      <h3>6.1 y 6.2. Comprobar Windows 11</h3>
+      <p>Necesitas un equipo con Windows 11, navegador moderno (Edge o Chrome) y conexión a Internet. Para comprobar tu versión: pulsa <code>Windows + I</code> → <strong>Sistema</strong> → <strong>Acerca de</strong>, o pulsa <code>Windows + R</code>, escribe <code>winver</code> y pulsa Intro.</p>
+
+      <h3>6.4. Instalar Visual Studio Code</h3>
+      <ol>
+        <li>Abre el sitio oficial de Visual Studio Code y descarga <strong>Windows User Installer</strong> (x64).</li>
+        <li>Ejecuta el instalador, acepta la licencia y mantén marcada la opción de añadir VS Code al <code>PATH</code>.</li>
+        <li>Termina la instalación y ábrelo desde Inicio.</li>
+      </ol>
+      <div class="ext-link-box">
+        <div class="ext-link-info">
+          <strong>Descarga oficial de Visual Studio Code</strong>
+          <span class="ext-link-url">https://code.visualstudio.com/</span>
+        </div>
+        <div class="ext-link-actions">
+          <a href="https://code.visualstudio.com/" target="_blank" rel="noopener noreferrer" class="btn-open-new">Abrir enlace en nueva ventana</a>
+          <button class="copy-btn" data-copy="https://code.visualstudio.com/">COPIAR</button>
+        </div>
+      </div>
+
+      <h3>6.5 y 6.6. Terminal PowerShell e instalar Node.js LTS</h3>
+      <p>La terminal (PowerShell) sirve para ejecutar comandos; el editor (VS Code) sirve para escribir código. Node.js permite ejecutar JavaScript fuera del navegador para nuestro servidor Express.</p>
+      <ol>
+        <li>Visita la descarga oficial de Node.js y selecciona la versión marcada <strong>LTS</strong> (Long-Term Support, por ejemplo rama 24 LTS o 26.13.1 LTS). No instales versiones Alpha ni EOL.</li>
+        <li>Descarga el instalador <code>.msi</code> para Windows, ejecútalo con valores predeterminados y abre una nueva ventana de PowerShell.</li>
+      </ol>
+      <div class="ext-link-box">
+        <div class="ext-link-info">
+          <strong>Descarga oficial de Node.js LTS</strong>
+          <span class="ext-link-url">https://nodejs.org/en/download/</span>
+        </div>
+        <div class="ext-link-actions">
+          <a href="https://nodejs.org/en/download/" target="_blank" rel="noopener noreferrer" class="btn-open-new">Abrir enlace en nueva ventana</a>
+          <button class="copy-btn" data-copy="https://nodejs.org/en/download/">COPIAR</button>
+        </div>
+      </div>
+
+      <p>Comprueba Node.js y npm en PowerShell:</p>
+      <div class="code-block">
+        <div class="code-header">
+          <span>PowerShell — Verificar Node y npm</span>
+          <button class="copy-btn" data-copy="node --version&#10;npm --version">COPIAR</button>
+        </div>
+        <pre><code>node --version
+npm --version</code></pre>
+      </div>
+
+      <h3>6.7 a 6.10. Crear la carpeta y estructura del proyecto</h3>
+      <p>Ejecuta en PowerShell para crear la carpeta de trabajo y abrirla en VS Code:</p>
+      <div class="code-block">
+        <div class="code-header">
+          <span>PowerShell — Crear carpeta y abrir VS Code</span>
+          <button class="copy-btn" data-copy='New-Item -ItemType Directory -Force "$HOME\stripe-appearance-lab"&#10;Set-Location "$HOME\stripe-appearance-lab"&#10;code .'>COPIAR</button>
+        </div>
+        <pre><code>New-Item -ItemType Directory -Force "$HOME\stripe-appearance-lab"
+Set-Location "$HOME\stripe-appearance-lab"
+code .</code></pre>
+      </div>
+
+      <p>Crea la siguiente estructura de carpetas y archivos en el Explorador de VS Code (para detener el servidor más adelante usarás <code>Ctrl + C</code>):</p>
+      <div class="code-block">
+        <div class="code-header"><span>Árbol de archivos del proyecto</span></div>
+        <pre><code>stripe-appearance-lab/
+├── public/
+│   ├── index.html
+│   ├── styles.css
+│   └── app.js
+├── .env
+├── .gitignore
+├── package.json
+└── server.mjs</code></pre>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>7. Crear la cuenta y preparar Stripe</h2>
+      <p>Entra en Stripe, crea una cuenta y accede al <strong>Dashboard</strong> activando el <strong>sandbox o entorno de pruebas</strong> para simular pagos sin mover fondos reales.</p>
+      <div class="ext-link-box">
+        <div class="ext-link-info">
+          <strong>Claves API en el Dashboard de Stripe</strong>
+          <span class="ext-link-url">https://dashboard.stripe.com/apikeys</span>
+        </div>
+        <div class="ext-link-actions">
+          <a href="https://dashboard.stripe.com/apikeys" target="_blank" rel="noopener noreferrer" class="btn-open-new">Abrir enlace en nueva ventana</a>
+          <button class="copy-btn" data-copy="https://dashboard.stripe.com/apikeys">COPIAR</button>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Clave</th>
+              <th>Prefijo de prueba</th>
+              <th>Dónde se usa</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Publicable</td>
+              <td><code>pk_test_</code></td>
+              <td>Navegador, Stripe.js</td>
+            </tr>
+            <tr>
+              <td>Secreta</td>
+              <td><code>sk_test_</code></td>
+              <td>Servidor únicamente (<code>.env</code>)</td>
+            </tr>
+            <tr>
+              <td>Restringida</td>
+              <td><code>rk_test_</code></td>
+              <td>Servidor, con permisos limitados</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout warn">
+        <strong>ADVERTENCIA — NO CAMBIES A MODO REAL:</strong> Las claves de modo activo empiezan por <code>pk_live_</code> y <code>sk_live_</code>. Si las utilizas, puedes procesar operaciones reales. En este curso nunca se utilizan claves live ni se comparten claves secretas.
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================= -->
+  <!-- PESTAÑA 3: PRIMERA INTEGRACIÓN                            -->
+  <!-- ========================================================= -->
+  <section class="tab-panel" data-t="Primera Integración">
+    <div class="card">
+      <h2>8. Crear la estructura e inicializar dependencias</h2>
+      <p>En la terminal integrada de VS Code (<strong>Terminal &gt; Nuevo terminal</strong>), situada en <code>stripe-appearance-lab</code>, ejecuta:</p>
+      <div class="code-block">
+        <div class="code-header">
+          <span>PowerShell — Inicializar npm e instalar paquetes</span>
+          <button class="copy-btn" data-copy="npm init -y&#10;npm install express stripe dotenv">COPIAR</button>
+        </div>
+        <pre><code>npm init -y
+npm install express stripe dotenv</code></pre>
+      </div>
+
+      <h3>8.2. package.json</h3>
+      <div class="code-block">
+        <div class="code-header">
+          <span>package.json</span>
+          <button class="copy-btn" data-copy='{&#10;  "name": "stripe-appearance-lab",&#10;  "version": "1.0.0",&#10;  "private": true,&#10;  "type": "module",&#10;  "scripts": {&#10;    "start": "node server.mjs"&#10;  },&#10;  "dependencies": {&#10;    "dotenv": "^16.4.7",&#10;    "express": "^5.1.0",&#10;    "stripe": "^18.5.0"&#10;  }&#10;}'>COPIAR</button>
+        </div>
+        <pre><code>{
+  "name": "stripe-appearance-lab",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node server.mjs"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "express": "^5.1.0",
+    "stripe": "^18.5.0"
+  }
+}</code></pre>
+      </div>
+
+      <h3>8.3. .gitignore</h3>
+      <div class="code-block">
+        <div class="code-header">
+          <span>.gitignore</span>
+          <button class="copy-btn" data-copy="node_modules/&#10;.env&#10;.DS_Store">COPIAR</button>
+        </div>
+        <pre><code>node_modules/
+.env
+.DS_Store</code></pre>
+      </div>
+
+      <h3>8.4. .env</h3>
+      <div class="code-block">
+        <div class="code-header">
+          <span>.env (Reemplaza con tu clave secreta de prueba)</span>
+          <button class="copy-btn" data-copy="STRIPE_SECRET_KEY=sk_test_REEMPLAZA_POR_TU_CLAVE_DE_PRUEBA&#10;PORT=4242">COPIAR</button>
+        </div>
+        <pre><code>STRIPE_SECRET_KEY=sk_test_REEMPLAZA_POR_TU_CLAVE_DE_PRUEBA
+PORT=4242</code></pre>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>9 y 10. Código completo de la primera integración</h2>
+      <p>El frontend (HTML, CSS y JS) carga <code>https://js.stripe.com/v3/</code>, solicita el <code>clientSecret</code> al endpoint <code>/create-payment-intent</code> del backend y monta el Payment Element con la configuración <code>appearance</code>.</p>
+
+      <h3>10.1. server.mjs (Backend)</h3>
+      <div class="code-block">
+        <div class="code-header">
+          <span>server.mjs</span>
+          <button class="copy-btn" id="copyServerBtn">COPIAR</button>
+        </div>
+        <pre><code id="codeServer">import 'dotenv/config';
+import express from 'express';
+import Stripe from 'stripe';
+
+const app = express();
+const port = Number(process.env.PORT || 4242);
+const secretKey = process.env.STRIPE_SECRET_KEY;
+
+if (!secretKey || !secretKey.startsWith('sk_test_')) {
+  throw new Error(
+    'Falta STRIPE_SECRET_KEY de pruebas. Revisa el archivo .env.'
+  );
+}
+
+const stripe = new Stripe(secretKey);
+
+app.use(express.static('public'));
+app.use(express.json());
+
+app.post('/create-payment-intent', async (req, res) => {
+  try {
+    // Importe fijado en el servidor: 24,99 EUR = 2499 céntimos.
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: 2499,
+      currency: 'eur',
+      automatic_payment_methods: {
+        enabled: true
+      }
+    });
+
+    res.json({
+      clientSecret: paymentIntent.client_secret
+    });
+  } catch (error) {
+    console.error('No se pudo crear el PaymentIntent:', error.message);
+    res.status(500).json({
+      error: 'No se pudo preparar el pago de prueba.'
+    });
+  }
+});
+
+app.listen(port, () => {
+  console.log(`Servidor de prueba disponible en http://localhost:${port}`);
+});</code></pre>
+      </div>
+
+      <h3>10.2. public/index.html</h3>
+      <div class="code-block">
+        <div class="code-header">
+          <span>public/index.html</span>
+          <button class="copy-btn" id="copyHtmlBtn">COPIAR</button>
+        </div>
+        <pre><code id="codeHtml">&lt;!doctype html&gt;
+&lt;html lang="es"&gt;
+&lt;head&gt;
+  &lt;meta charset="utf-8"&gt;
+  &lt;meta name="viewport" content="width=device-width, initial-scale=1"&gt;
+  &lt;title&gt;Taller Demo — Pago de prueba&lt;/title&gt;
+  &lt;link rel="stylesheet" href="/styles.css"&gt;
+  &lt;script src="https://js.stripe.com/v3/"&gt;&lt;/script&gt;
+  &lt;script src="/app.js" defer&gt;&lt;/script&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  &lt;main class="page"&gt;
+    &lt;header class="brand"&gt;
+      &lt;div class="brand-mark"&gt;TD&lt;/div&gt;
+      &lt;div&gt;
+        &lt;p class="eyebrow"&gt;TALLER DEMO&lt;/p&gt;
+        &lt;h1&gt;Finaliza tu pedido&lt;/h1&gt;
+      &lt;/div&gt;
+    &lt;/header&gt;
+
+    &lt;section class="checkout-card"&gt;
+      &lt;div class="order"&gt;
+        &lt;div&gt;
+          &lt;p class="eyebrow"&gt;RESUMEN&lt;/p&gt;
+          &lt;h2&gt;Servicio de demostración&lt;/h2&gt;
+          &lt;p class="muted"&gt;Pago único · entorno de pruebas&lt;/p&gt;
+        &lt;/div&gt;
+        &lt;strong class="price"&gt;24,99 €&lt;/strong&gt;
+      &lt;/div&gt;
+
+      &lt;div class="separator"&gt;&lt;/div&gt;
+
+      &lt;h2 class="section-title"&gt;Método de pago&lt;/h2&gt;
+      &lt;p class="muted"&gt;Introduce los datos de prueba que indica Stripe.&lt;/p&gt;
+
+      &lt;form id="payment-form"&gt;
+        &lt;div id="payment-element"&gt;&lt;/div&gt;
+        &lt;button id="submit-button" type="submit" disabled&gt;
+          &lt;span id="button-text"&gt;Preparando pago…&lt;/span&gt;
+        &lt;/button&gt;
+        &lt;p id="payment-message" role="status" aria-live="polite"&gt;&lt;/p&gt;
+      &lt;/form&gt;
+
+      &lt;p class="test-note"&gt;DEMO · NO SE REALIZA NINGÚN CARGO REAL&lt;/p&gt;
+    &lt;/section&gt;
+
+    &lt;footer&gt;Experiencia de demostración. No introduzcas datos de tarjetas reales.&lt;/footer&gt;
+  &lt;/main&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+      </div>
+
+      <h3>10.3. public/styles.css</h3>
+      <div class="code-block">
+        <div class="code-header">
+          <span>public/styles.css</span>
+          <button class="copy-btn" id="copyCssBtn">COPIAR</button>
+        </div>
+        <pre><code id="codeCss">:root {
+  font-family: Arial, Helvetica, sans-serif;
+  color: #172b36;
+  background: #edf3f3;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+}
+
+.page {
+  width: min(100% - 32px, 720px);
+  margin: 48px auto;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+.brand-mark {
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  background: #123f4a;
+  color: white;
+  font-weight: 800;
+}
+
+h1, h2, p {
+  margin-top: 0;
+}
+
+h1 {
+  margin-bottom: 0;
+  font-size: clamp(1.5rem, 5vw, 2rem);
+}
+
+.eyebrow {
+  margin-bottom: 5px;
+  color: #47727a;
+  font-size: .72rem;
+  font-weight: 800;
+  letter-spacing: .12em;
+}
+
+.checkout-card {
+  padding: clamp(20px, 5vw, 36px);
+  border: 1px solid #dce6e6;
+  border-radius: 22px;
+  background: white;
+  box-shadow: 0 18px 55px rgba(18, 63, 74, .08);
+}
+
+.order {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.order h2 {
+  margin-bottom: 6px;
+  font-size: 1.08rem;
+}
+
+.price {
+  white-space: nowrap;
+  font-size: 1.25rem;
+}
+
+.muted {
+  color: #64777c;
+  line-height: 1.5;
+}
+
+.separator {
+  height: 1px;
+  margin: 24px 0;
+  background: #e5eded;
+}
+
+.section-title {
+  margin-bottom: 8px;
+  font-size: 1.15rem;
+}
+
+#payment-element {
+  margin: 22px 0;
+}
+
+button {
+  width: 100%;
+  min-height: 50px;
+  border: 0;
+  border-radius: 12px;
+  background: #123f4a;
+  color: white;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: .55;
+  cursor: not-allowed;
+}
+
+#payment-message {
+  min-height: 24px;
+  margin: 14px 0 0;
+  color: #9c293d;
+  line-height: 1.45;
+}
+
+.test-note {
+  margin: 24px 0 0;
+  padding: 10px;
+  border-radius: 8px;
+  background: #edf8f3;
+  color: #176447;
+  text-align: center;
+  font-size: .72rem;
+  font-weight: 800;
+  letter-spacing: .05em;
+}
+
+footer {
+  padding: 20px 8px;
+  color: #64777c;
+  text-align: center;
+  font-size: .85rem;
+}
+
+@media (max-width: 480px) {
+  .page {
+    margin: 24px auto;
+  }
+  .order {
+    flex-direction: column;
+  }
+}</code></pre>
+      </div>
+
+      <h3>10.4. public/app.js</h3>
+      <div class="code-block">
+        <div class="code-header">
+          <span>public/app.js</span>
+          <button class="copy-btn" id="copyJsBtn">COPIAR</button>
+        </div>
+        <pre><code id="codeJs">const publishableKey = 'pk_test_REEMPLAZA_POR_TU_CLAVE_PUBLICABLE';
+
+const stripe = Stripe(publishableKey);
+
+const appearance = {
+  theme: 'stripe',
+  inputs: 'spaced',
+  labels: 'above',
+  variables: {
+    colorPrimary: '#147d69',
+    colorBackground: '#ffffff',
+    colorText: '#172b36',
+    colorDanger: '#b4233c',
+    fontFamily: 'Arial, Helvetica, sans-serif',
+    fontSizeBase: '16px',
+    spacingUnit: '4px',
+    borderRadius: '10px',
+    inputColorBorder: '#cbd9d9',
+    inputFocusColorBorder: '#147d69'
+  },
+  rules: {
+    '.Input': {
+      boxShadow: 'none'
+    },
+    '.Input:focus': {
+      boxShadow: '0 0 0 2px rgba(20, 125, 105, 0.18)'
+    },
+    '.Label': {
+      fontWeight: '600'
+    },
+    '.Tab--selected': {
+      boxShadow: '0 0 0 2px var(--colorPrimary)'
+    }
+  }
+};
+
+const form = document.querySelector('#payment-form');
+const button = document.querySelector('#submit-button');
+const buttonText = document.querySelector('#button-text');
+const message = document.querySelector('#payment-message');
+
+let stripeElements;
+
+function showMessage(text) {
+  message.textContent = text;
+}
+
+async function initialize() {
+  try {
+    const response = await fetch('/create-payment-intent', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || 'No se pudo iniciar el pago.');
+    }
+
+    stripeElements = stripe.elements({
+      clientSecret: data.clientSecret,
+      appearance
+    });
+
+    const paymentElement = stripeElements.create('payment');
+    paymentElement.mount('#payment-element');
+
+    button.disabled = false;
+    buttonText.textContent = 'Pagar 24,99 € (prueba)';
+  } catch (error) {
+    showMessage(error.message);
+    buttonText.textContent = 'No disponible';
+  }
+}
+
+form.addEventListener('submit', async (event) => {
+  event.preventDefault();
+
+  if (!stripeElements) return;
+
+  button.disabled = true;
+  buttonText.textContent = 'Procesando…';
+  showMessage('');
+
+  const { error, paymentIntent } = await stripe.confirmPayment({
+    elements: stripeElements,
+    confirmParams: {
+      return_url: `${window.location.origin}/`
+    },
+    redirect: 'if_required'
+  });
+
+  if (error) {
+    showMessage(error.message || 'No se pudo confirmar el pago.');
+    button.disabled = false;
+    buttonText.textContent = 'Intentar de nuevo';
+    return;
+  }
+
+  if (paymentIntent && paymentIntent.status === 'succeeded') {
+    showMessage('Pago de prueba completado correctamente.');
+    buttonText.textContent = 'Pago completado';
+    return;
+  }
+
+  showMessage('La operación se ha enviado. Comprueba su estado en Stripe.');
+  buttonText.textContent = 'Operación enviada';
+});
+
+initialize();</code></pre>
+      </div>
+
+      <h3>10.5 y 10.6. Ejecutar y probar el pago</h3>
+      <p>Ejecuta <code>npm start</code> en la terminal y abre <code>http://localhost:4242</code>. Utiliza los datos de tarjeta Visa de prueba de Stripe:</p>
+      <ul>
+        <li><strong>Número:</strong> <code>4242 4242 4242 4242</code></li>
+        <li><strong>Fecha futura:</strong> por ejemplo <code>12/34</code></li>
+        <li><strong>CVC:</strong> tres cifras cualquiera (ej. <code>123</code>)</li>
+      </ul>
+      <div class="callout tip">
+        <strong>Nota profesional:</strong> Para un negocio real, no marques un pedido como pagado basándote únicamente en un mensaje del navegador. Implementa <strong>webhooks</strong> y verifica el estado del PaymentIntent en el servidor antes de entregar productos o servicios.
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================= -->
+  <!-- PESTAÑA 4: DOMINAR APPEARANCE API                         -->
+  <!-- ========================================================= -->
+  <section class="tab-panel" data-t="Dominar Appearance API">
+    <div class="card">
+      <h2>11 y 12. Configuración de apariencia y Temas</h2>
+      <p>El objeto <code>appearance</code> se entrega a <code>stripe.elements({ clientSecret, appearance })</code>. Contiene <code>theme</code> (<code>'stripe'</code>, <code>'night'</code>, <code>'flat'</code>), <code>inputs</code> (<code>'spaced'</code> o <code>'flat'</code>), <code>labels</code> (<code>'above'</code> o <code>'floating'</code>), <code>variables</code> y <code>rules</code>.</p>
+    </div>
+
+    <div class="card">
+      <h2>13. Variables principales</h2>
+      <div class="callout warn">
+        <strong>Restricción importante de sintaxis:</strong> Las variables <code>colorPrimary</code>, <code>colorBackground</code>, <code>colorText</code>, <code>colorSuccess</code>, <code>colorDanger</code> y <code>colorWarning</code> <strong>no admiten</strong> <code>rgba()</code> ni <code>var(--myVariable)</code> como valor directo. Utiliza valores hexadecimales o RGB sólidos.
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Categoría</th>
+              <th>Variables documentadas</th>
+              <th>Notas</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Colores generales</td>
+              <td><code>colorPrimary</code>, <code>colorBackground</code>, <code>colorText</code>, <code>colorTextSecondary</code>, <code>colorTextPlaceholder</code>, <code>colorDanger</code>, <code>colorSuccess</code>, <code>colorWarning</code></td>
+              <td>Controlan la paleta global</td>
+            </tr>
+            <tr>
+              <td>Tipografía</td>
+              <td><code>fontFamily</code>, <code>fontSizeBase</code>, <code>fontSize2Xl</code>..<code>fontSize3Xs</code>, <code>fontWeightLight</code>, <code>fontWeightNormal</code>, <code>fontWeightMedium</code>, <code>fontWeightBold</code>, <code>fontLineHeight</code>, <code>fontSmooth</code></td>
+              <td>Stripe recomienda <code>fontSizeBase: '16px'</code> mínimo en móviles</td>
+            </tr>
+            <tr>
+              <td>Bordes, campos y foco</td>
+              <td><code>borderRadius</code>, <code>spacingUnit</code>, <code>inputColorBorder</code>, <code>inputBoxShadow</code>, <code>inputFocusColorBorder</code>, <code>inputFocusBoxShadow</code>, <code>focusBoxShadow</code>, <code>focusOutline</code></td>
+              <td>Base geométrica y anillos de foco</td>
+            </tr>
+            <tr>
+              <td>Etiquetas y botones</td>
+              <td><code>labelColorText</code>, <code>labelFontSize</code>, <code>labelFontWeight</code>, <code>labelSpacing</code>, <code>buttonBorderRadius</code>, <code>buttonBoxShadow</code>, <code>buttonColorBackground</code>, <code>buttonColorText</code></td>
+              <td><code>labelSpacing</code> no aplica en etiquetas flotantes</td>
+            </tr>
+            <tr>
+              <td>Iconos y pestañas</td>
+              <td><code>iconColor</code>, <code>iconHoverColor</code>, <code>iconCheckmarkColor</code>, <code>tabIconColor</code>, <code>tabIconSelectedColor</code>, <code>tabSpacing</code>, <code>accordionItemSpacing</code>, <code>gridRowSpacing</code></td>
+              <td>Ajustes de navegación interna</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>14, 15, 16 y 17. Reglas, Fuentes, Accesibilidad y Marca</h2>
+      <ul>
+        <li><strong>Selectores válidos:</strong> <code>.Tab</code>, <code>.Label</code>, <code>.Input</code>, <code>.Tab:focus</code>, <code>.Tab--selected</code>, <code>.Input--invalid</code>, <code>.Label--invalid</code>, <code>.Input::placeholder</code>, <code>.Block</code>, <code>.Checkbox</code>, <code>.Dropdown</code>, <code>.Switch</code>, <code>.PickerItem</code>, <code>.Menu</code>, <code>.AccordionItem</code>.</li>
+        <li><strong>Selectores prohibidos:</strong> Clases privadas (<code>.p-SomePrivateClass</code>), etiquetas genéricas (<code>img</code>), selectores descendientes (<code>.Tab .TabLabel</code>) o estados no documentados (<code>.Tab--invalid</code>).</li>
+        <li><strong>Fuentes personalizadas:</strong> Se cargan pasando la opción <code>fonts</code> a <code>stripe.elements({ clientSecret, appearance, fonts })</code> y referenciándolas en <code>variables.fontFamily</code>.</li>
+        <li><strong>Accesibilidad:</strong> Garantiza contraste adecuado, <code>fontSizeBase</code> de al menos 16 px en móvil, indicadores de foco visibles para teclado (<code>Tab</code>, <code>Mayús + Tab</code>) y mensajes de error claros sin depender solo del color rojo.</li>
+      </ul>
+
+      <h3>Laboratorio interactivo: Simulador visual Appearance API</h3>
+      <p>Experimenta en tiempo real cómo cambian las variables y reglas del Payment Element:</p>
+      <div class="sandbox-controls">
+        <div class="sandbox-field">
+          <label for="simTheme">Tema (theme)</label>
+          <select id="simTheme">
+            <option value="stripe">stripe (Claro)</option>
+            <option value="night">night (Oscuro)</option>
+            <option value="flat">flat (Plano)</option>
+          </select>
+        </div>
+        <div class="sandbox-field">
+          <label for="simPrimary">colorPrimary</label>
+          <input type="color" id="simPrimary" value="#147d69">
+        </div>
+        <div class="sandbox-field">
+          <label for="simRadius">borderRadius (<span id="simRadiusVal">12px</span>)</label>
+          <input type="range" id="simRadius" min="0" max="24" value="12">
+        </div>
+      </div>
+
+      <div id="simPreviewBox" class="sandbox-preview" style="background:#ffffff;color:#172b36;">
+        <div style="display:flex;gap:8px;margin-bottom:12px;">
+          <span id="simTab1" style="padding:8px 14px;border-radius:12px;border:2px solid #147d69;font-weight:700;font-size:0.85rem;">💳 Tarjeta</span>
+          <span id="simTab2" style="padding:8px 14px;border-radius:12px;border:1px solid #cbd9d9;font-size:0.85rem;opacity:0.75;">🏦 SEPA</span>
+        </div>
+        <label style="display:block;font-size:0.85rem;font-weight:600;margin-bottom:4px;">Número de tarjeta (Norte Claro)</label>
+        <input id="simInput" type="text" value="4242 4242 4242 4242" readonly style="width:100%;padding:10px 12px;border-radius:12px;border:1px solid #cbd9d9;font-size:16px;margin-bottom:12px;">
+        <button id="simPayBtn" type="button" style="width:100%;padding:12px;border:none;border-radius:12px;background:#147d69;color:#ffffff;font-weight:700;font-size:0.95rem;">Pagar 24,99 € (Vista previa)</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================= -->
+  <!-- PESTAÑA 5: 10 CASOS PRÁCTICOS                             -->
+  <!-- ========================================================= -->
+  <section class="tab-panel" data-t="10 Casos Prácticos">
+    <div class="card">
+      <h2>Parte V. Diez Casos de Uso Guiados</h2>
+      <p>Estos diez casos prácticos trabajan sobre el proyecto base en <code>public/app.js</code> (y archivos complementarios cuando se indica). Guarda y recarga el navegador tras cada modificación frontend.</p>
+    </div>
+
+    <div class="card">
+      <h3>Caso 1. Aplicar un tema predefinido</h3>
+      <p><strong>Situación real:</strong> Una empresa quiere empezar con un diseño Stripe neutro sin invertir aún en una identidad visual completa.<br>
+      <strong>Aprenderás:</strong> Seleccionar un tema (<code>stripe</code>, <code>night</code>, <code>flat</code>).<br>
+      <strong>Resultado esperado:</strong> El Payment Element utiliza una base oscura con <code>night</code> mientras el contenedor exterior sigue controlado por tu CSS.</p>
+      <div class="code-block">
+        <div class="code-header">
+          <span>public/app.js — Caso 1</span>
+          <button class="copy-btn" data-copy="const appearance = {&#10;  theme: 'night'&#10;};">COPIAR</button>
+        </div>
+        <pre><code>const appearance = {
+  theme: 'night'
+};</code></pre>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Caso 2. Cambiar los colores para una marca</h3>
+      <p><strong>Situación real:</strong> Una tienda quiere que el color principal del formulario coincida con su marca.<br>
+      <strong>Aprenderás:</strong> Utilizar variables de color (<code>colorPrimary</code>, <code>colorBackground</code>, <code>colorText</code>, <code>colorDanger</code>).</p>
+      <div class="code-block">
+        <div class="code-header">
+          <span>public/app.js — Caso 2</span>
+          <button class="copy-btn" data-copy="variables: {&#10;  colorPrimary: '#5b3cc4',&#10;  colorBackground: '#ffffff',&#10;  colorText: '#202033',&#10;  colorDanger: '#b4233c'&#10;}">COPIAR</button>
+        </div>
+        <pre><code>variables: {
+  colorPrimary: '#5b3cc4',
+  colorBackground: '#ffffff',
+  colorText: '#202033',
+  colorDanger: '#b4233c'
+}</code></pre>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Caso 3. Ajustar tipografía y legibilidad</h3>
+      <p><strong>Situación real:</strong> Una web utiliza textos pequeños y quiere que los campos sean cómodos de leer en móvil.<br>
+      <strong>Aprenderás:</strong> <code>fontFamily</code>, <code>fontSizeBase</code> (mínimo 16 px recomendado) y pesos tipográficos.</p>
+      <div class="code-block">
+        <div class="code-header">
+          <span>public/app.js — Caso 3</span>
+          <button class="copy-btn" data-copy="variables: {&#10;  fontFamily: 'Arial, Helvetica, sans-serif',&#10;  fontSizeBase: '16px',&#10;  fontWeightNormal: '400',&#10;  fontWeightMedium: '600',&#10;  fontWeightBold: '700'&#10;}">COPIAR</button>
+        </div>
+        <pre><code>variables: {
+  fontFamily: 'Arial, Helvetica, sans-serif',
+  fontSizeBase: '16px',
+  fontWeightNormal: '400',
+  fontWeightMedium: '600',
+  fontWeightBold: '700'
+}</code></pre>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Caso 4. Personalizar bordes, radios y espaciados</h3>
+      <p><strong>Situación real:</strong> Un formulario se ve demasiado rígido o demasiado redondeado.<br>
+      <strong>Aprenderás:</strong> <code>borderRadius</code> y <code>spacingUnit</code>.</p>
+      <div class="code-block">
+        <div class="code-header">
+          <span>public/app.js — Caso 4</span>
+          <button class="copy-btn" data-copy="variables: {&#10;  borderRadius: '14px',&#10;  spacingUnit: '5px'&#10;}">COPIAR</button>
+        </div>
+        <pre><code>variables: {
+  borderRadius: '14px',
+  spacingUnit: '5px'
+}</code></pre>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Caso 5. Modificar campos y estados</h3>
+      <p><strong>Situación real:</strong> La marca necesita que el foco del campo sea visible y que los errores se distingan.<br>
+      <strong>Aprenderás:</strong> Reglas para <code>.Input</code>, <code>:focus</code>, <code>.Input--invalid</code> y <code>.Label--invalid</code>.</p>
+      <div class="code-block">
+        <div class="code-header">
+          <span>public/app.js — Caso 5</span>
+          <button class="copy-btn" data-copy="rules: {&#10;  '.Input': {&#10;    boxShadow: 'none'&#10;  },&#10;  '.Input:focus': {&#10;    boxShadow: '0 0 0 3px rgba(20, 125, 105, 0.20)'&#10;  },&#10;  '.Input--invalid': {&#10;    boxShadow: '0 0 0 2px var(--colorDanger)'&#10;  },&#10;  '.Label--invalid': {&#10;    color: 'var(--colorDanger)'&#10;  }&#10;}">COPIAR</button>
+        </div>
+        <pre><code>rules: {
+  '.Input': {
+    boxShadow: 'none'
+  },
+  '.Input:focus': {
+    boxShadow: '0 0 0 3px rgba(20, 125, 105, 0.20)'
+  },
+  '.Input--invalid': {
+    boxShadow: '0 0 0 2px var(--colorDanger)'
+  },
+  '.Label--invalid': {
+    color: 'var(--colorDanger)'
+  }
+}</code></pre>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Caso 6. Crear una apariencia clara y otra oscura</h3>
+      <p><strong>Situación real:</strong> Una plataforma ofrece una interfaz clara y otra oscura.<br>
+      <strong>Aprenderás:</strong> Preparar dos objetos de apariencia (<code>appearanceLight</code> y <code>appearanceDark</code>) y seleccionar uno al cargar.</p>
+      <div class="code-block">
+        <div class="code-header">
+          <span>public/app.js — Caso 6</span>
+          <button class="copy-btn" data-copy="const appearanceLight = {&#10;  theme: 'stripe',&#10;  variables: {&#10;    colorPrimary: '#147d69',&#10;    colorBackground: '#ffffff',&#10;    colorText: '#172b36',&#10;    colorDanger: '#b4233c',&#10;    fontFamily: 'Arial, sans-serif',&#10;    fontSizeBase: '16px',&#10;    borderRadius: '10px'&#10;  }&#10;};&#10;&#10;const appearanceDark = {&#10;  theme: 'night',&#10;  variables: {&#10;    colorPrimary: '#75d7bd',&#10;    colorBackground: '#17242a',&#10;    colorText: '#f3f7f6',&#10;    colorDanger: '#ff8292',&#10;    fontFamily: 'Arial, sans-serif',&#10;    fontSizeBase: '16px',&#10;    borderRadius: '10px'&#10;  }&#10;};&#10;&#10;const appearance = appearanceLight;">COPIAR</button>
+        </div>
+        <pre><code>const appearanceLight = {
+  theme: 'stripe',
+  variables: {
+    colorPrimary: '#147d69',
+    colorBackground: '#ffffff',
+    colorText: '#172b36',
+    colorDanger: '#b4233c',
+    fontFamily: 'Arial, sans-serif',
+    fontSizeBase: '16px',
+    borderRadius: '10px'
+  }
+};
+
+const appearanceDark = {
+  theme: 'night',
+  variables: {
+    colorPrimary: '#75d7bd',
+    colorBackground: '#17242a',
+    colorText: '#f3f7f6',
+    colorDanger: '#ff8292',
+    fontFamily: 'Arial, sans-serif',
+    fontSizeBase: '16px',
+    borderRadius: '10px'
+  }
+};
+
+const appearance = appearanceLight;</code></pre>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Caso 7. Identidad visual empresarial completa (Norte Claro)</h3>
+      <p><strong>Situación real:</strong> Una empresa quiere un formulario reconocible y consistente con su marca.<br>
+      <strong>Aprenderás:</strong> Combinar tema, inputs, labels, variables y reglas en un sistema coherente.</p>
+      <div class="code-block">
+        <div class="code-header">
+          <span>public/app.js — Caso 7</span>
+          <button class="copy-btn" data-copy="const appearance = {&#10;  theme: 'stripe',&#10;  inputs: 'spaced',&#10;  labels: 'above',&#10;  variables: {&#10;    colorPrimary: '#123f4a',&#10;    colorBackground: '#ffffff',&#10;    colorText: '#17313a',&#10;    colorTextSecondary: '#557078',&#10;    colorDanger: '#a5283d',&#10;    colorSuccess: '#176b50',&#10;    fontFamily: 'Arial, Helvetica, sans-serif',&#10;    fontSizeBase: '16px',&#10;    fontWeightNormal: '400',&#10;    fontWeightMedium: '600',&#10;    fontWeightBold: '700',&#10;    spacingUnit: '4px',&#10;    borderRadius: '12px',&#10;    inputColorBorder: '#cbd9d9',&#10;    inputFocusColorBorder: '#147d69'&#10;  },&#10;  rules: {&#10;    '.Input': {&#10;      boxShadow: 'none'&#10;    },&#10;    '.Input:focus': {&#10;      boxShadow: '0 0 0 2px rgba(20, 125, 105, 0.18)'&#10;    },&#10;    '.Label': {&#10;      fontWeight: '600'&#10;    },&#10;    '.Input--invalid': {&#10;      boxShadow: '0 0 0 2px var(--colorDanger)'&#10;    }&#10;  }&#10;};">COPIAR</button>
+        </div>
+        <pre><code>const appearance = {
+  theme: 'stripe',
+  inputs: 'spaced',
+  labels: 'above',
+  variables: {
+    colorPrimary: '#123f4a',
+    colorBackground: '#ffffff',
+    colorText: '#17313a',
+    colorTextSecondary: '#557078',
+    colorDanger: '#a5283d',
+    colorSuccess: '#176b50',
+    fontFamily: 'Arial, Helvetica, sans-serif',
+    fontSizeBase: '16px',
+    fontWeightNormal: '400',
+    fontWeightMedium: '600',
+    fontWeightBold: '700',
+    spacingUnit: '4px',
+    borderRadius: '12px',
+    inputColorBorder: '#cbd9d9',
+    inputFocusColorBorder: '#147d69'
+  },
+  rules: {
+    '.Input': {
+      boxShadow: 'none'
+    },
+    '.Input:focus': {
+      boxShadow: '0 0 0 2px rgba(20, 125, 105, 0.18)'
+    },
+    '.Label': {
+      fontWeight: '600'
+    },
+    '.Input--invalid': {
+      boxShadow: '0 0 0 2px var(--colorDanger)'
+    }
+  }
+};</code></pre>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Caso 8. Experiencia coherente con una tienda online</h3>
+      <p><strong>Situación real:</strong> Una tienda muestra producto, precio, resumen y pago en la misma página.<br>
+      <strong>Regla importante:</strong> Si cambias el precio mostrado en <code>public/index.html</code> (por ejemplo 39,90 EUR), también debes cambiar el importe fijo en <code>server.mjs</code> a la unidad mínima de la moneda (<code>amount: 3990</code>). Nunca permitas que el navegador envíe el importe sin validación del servidor.</p>
+    </div>
+
+    <div class="card">
+      <h3>Caso 9. Reutilizar la configuración en varias páginas</h3>
+      <p><strong>Situación real:</strong> Una empresa mantiene varias páginas y quiere compartir el mismo diseño de pago mediante un módulo ES (<code>public/appearance.js</code> y <code>&lt;script type="module" src="/app.js"&gt;&lt;/script&gt;</code> en <code>index.html</code>).</p>
+      <div class="code-block">
+        <div class="code-header">
+          <span>public/appearance.js — Módulo reutilizable</span>
+          <button class="copy-btn" data-copy="export const appearance = {&#10;  theme: 'stripe',&#10;  inputs: 'spaced',&#10;  labels: 'above',&#10;  variables: {&#10;    colorPrimary: '#147d69',&#10;    colorBackground: '#ffffff',&#10;    colorText: '#172b36',&#10;    colorDanger: '#b4233c',&#10;    fontFamily: 'Arial, Helvetica, sans-serif',&#10;    fontSizeBase: '16px',&#10;    borderRadius: '10px'&#10;  },&#10;  rules: {&#10;    '.Input': {&#10;      boxShadow: 'none'&#10;    },&#10;    '.Input:focus': {&#10;      boxShadow: '0 0 0 2px rgba(20, 125, 105, 0.18)'&#10;    }&#10;  }&#10;};">COPIAR</button>
+        </div>
+        <pre><code>export const appearance = {
+  theme: 'stripe',
+  inputs: 'spaced',
+  labels: 'above',
+  variables: {
+    colorPrimary: '#147d69',
+    colorBackground: '#ffffff',
+    colorText: '#172b36',
+    colorDanger: '#b4233c',
+    fontFamily: 'Arial, Helvetica, sans-serif',
+    fontSizeBase: '16px',
+    borderRadius: '10px'
+  },
+  rules: {
+    '.Input': {
+      boxShadow: 'none'
+    },
+    '.Input:focus': {
+      boxShadow: '0 0 0 2px rgba(20, 125, 105, 0.18)'
+    }
+  }
+};</code></pre>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Caso 10. Versión profesional documentada (README.md)</h3>
+      <p><strong>Situación real:</strong> Una agencia entrega una integración a un cliente y documenta arquitectura, seguridad, diseño, pruebas y limitaciones.</p>
+      <div class="code-block">
+        <div class="code-header">
+          <span>README.md — Plantilla de entrega</span>
+          <button class="copy-btn" id="copyReadmeBtn">COPIAR</button>
+        </div>
+        <pre><code id="codeReadme"># Taller Demo — Stripe Elements
+
+## Objetivo
+Demostración de Payment Element con Appearance API en entorno de pruebas.
+
+## Arquitectura
+- Frontend: HTML, CSS y Stripe.js.
+- Backend: Node.js y Express.
+- Stripe: Payment Intents API.
+- Configuración visual: public/appearance.js.
+
+## Seguridad
+- Clave publicable: frontend.
+- Clave secreta: solo servidor, mediante .env.
+- .env excluido de Git.
+- Solo claves de prueba en este laboratorio.
+
+## Diseño
+- Tema: stripe.
+- Color principal: verde petróleo.
+- Tipografía: Arial.
+- Tamaño base: 16px.
+- Radio: 10px.
+
+## Pruebas
+- Carga del Payment Element.
+- Validación de datos de prueba.
+- Confirmación en sandbox.
+- Revisión del resultado en Dashboard.
+
+## Limitaciones
+No incluye webhook, impuestos, inventario, autenticación de clientes ni lógica de pedidos de producción.</code></pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================= -->
+  <!-- PESTAÑA 6: 10 PROYECTOS                                   -->
+  <!-- ========================================================= -->
+  <section class="tab-panel" data-t="10 Proyectos">
+    <div class="card">
+      <h2>Parte IX. Proyecto Final y 10 Proyectos Aplicados</h2>
+      <p>A continuación tienes el <strong>Proyecto Final Oficial (Lumen Casa)</strong> junto con 9 retos progresivos adicionales basados exclusivamente en las variables, temas y reglas documentados en este tutorial, para consolidar tu dominio de Appearance API.</p>
+    </div>
+
+    <div class="card">
+      <h3>Proyecto 1 (Proyecto Final Oficial): Lumen Casa — Servicios a domicilio</h3>
+      <p><strong>Enunciado:</strong> Crea una página de pago de prueba para <strong>Lumen Casa</strong> (instalación a domicilio) con identidad visual propia, paleta de cuatro colores, tema justificado, variables documentadas, reglas de foco y selección, importe fijo en servidor y documentación de limitaciones.</p>
+      <div class="code-block">
+        <div class="code-header">
+          <span>Solución de referencia — Lumen Casa (public/app.js)</span>
+          <button class="copy-btn" id="copyLumenBtn">COPIAR</button>
+        </div>
+        <pre><code id="codeLumen">const appearance = {
+  theme: 'stripe',
+  inputs: 'spaced',
+  labels: 'above',
+  variables: {
+    colorPrimary: '#3157a4',
+    colorBackground: '#ffffff',
+    colorText: '#1d2940',
+    colorTextSecondary: '#596b86',
+    colorDanger: '#b4233c',
+    colorSuccess: '#16744e',
+    fontFamily: 'Arial, Helvetica, sans-serif',
+    fontSizeBase: '16px',
+    fontWeightNormal: '400',
+    fontWeightMedium: '600',
+    fontWeightBold: '700',
+    spacingUnit: '4px',
+    borderRadius: '12px',
+    inputColorBorder: '#cbd5e1',
+    inputFocusColorBorder: '#3157a4',
+    focusOutline: '2px solid #3157a4'
+  },
+  rules: {
+    '.Input': {
+      boxShadow: 'none'
+    },
+    '.Input:focus': {
+      boxShadow: '0 0 0 2px rgba(49, 87, 164, 0.18)'
+    },
+    '.Label': {
+      fontWeight: '600'
+    },
+    '.Input--invalid': {
+      boxShadow: '0 0 0 2px var(--colorDanger)'
+    },
+    '.Tab--selected': {
+      boxShadow: '0 0 0 2px var(--colorPrimary)'
+    }
+  }
+};</code></pre>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Proyectos 2 al 10 — Retos de Implementación Guiada</h3>
+      <ol start="2">
+        <li><strong>Taller Demo Corporativo (Cap. 5 y 10):</strong> Implementa el checkout completo de 24,99 EUR con tema <code>stripe</code>, <code>colorPrimary: '#147d69'</code> y verificación en sandbox con tarjeta <code>4242 4242 4242 4242</code>.</li>
+        <li><strong>Identidad Norte Claro (Cap. 17):</strong> Diseña un checkout sobrio con <code>colorPrimary: '#123f4a'</code>, <code>borderRadius: '12px'</code>, <code>spacingUnit: '4px'</code> y foco accesible con teclado.</li>
+        <li><strong>Portal Nocturno SaaS (Caso 1 y 6):</strong> Configura el tema base <code>night</code> con fondo <code>#17242a</code>, texto claro <code>#f3f7f6</code> y acento <code>#75d7bd</code> verificando contraste.</li>
+        <li><strong>Checkout Minimalista Flat (Cap. 12):</strong> Utiliza <code>theme: 'flat'</code> con <code>borderRadius: '4px'</code> y <code>spacingUnit: '2px'</code> para una interfaz compacta.</li>
+        <li><strong>Tienda de Producto Único con Importe Sincronizado (Caso 8):</strong> Modifica <code>public/index.html</code> para mostrar 39,90 EUR y actualiza <code>server.mjs</code> a <code>amount: 3990</code>.</li>
+        <li><strong>Checkout Multi-Página Modular (Caso 9):</strong> Extrae <code>appearance</code> a <code>public/appearance.js</code> y cárgala mediante ES Modules en dos páginas HTML distintas.</li>
+        <li><strong>Formulario de Alta Legibilidad Móvil (Cap. 15 y 16):</strong> Configura <code>fontSizeBase: '16px'</code>, etiquetas flotantes o superiores y anillos de foco de 3 px para navegación exclusiva con teclado.</li>
+        <li><strong>Checkout con Validación Visual Reforzada (Caso 5):</strong> Implementa reglas específicas para <code>.Input--invalid</code> y <code>.Label--invalid</code> usando <code>var(--colorDanger)</code>.</li>
+        <li><strong>Entrega Técnica Auditada (Caso 10 y Cap. 23):</strong> Genera el repositorio limpio con <code>.gitignore</code>, <code>README.md</code> documentado y verificación de que <code>.env</code> nunca se expone.</li>
+      </ol>
+    </div>
+
+    <div class="card">
+      <h2>23. Autoevaluación interactiva y rúbrica (100 puntos)</h2>
+      <p>Marca cada habilidad adquirida (tu progreso se guarda automáticamente en el navegador):</p>
+      <div id="checklistContainer"></div>
+
+      <div class="table-wrap" style="margin-top:16px;">
+        <table>
+          <thead>
+            <tr>
+              <th>Criterio de evaluación</th>
+              <th>Puntuación</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>Proyecto arranca correctamente</td><td>15</td></tr>
+            <tr><td>Payment Element se muestra</td><td>15</td></tr>
+            <tr><td>Appearance API se aplica</td><td>20</td></tr>
+            <tr><td>Diseño legible y coherente</td><td>15</td></tr>
+            <tr><td>Prueba de pago completada</td><td>15</td></tr>
+            <tr><td>Claves protegidas</td><td>10</td></tr>
+            <tr><td>Documentación clara</td><td>10</td></tr>
+            <tr><td><strong>Total</strong></td><td><strong>100</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p><strong>Interpretación:</strong> 90–100: dominio sólido · 75–89: buen nivel · 60–74: integración básica · Menos de 60: repasa capítulos 8–14.</p>
+    </div>
+  </section>
+
+  <!-- ========================================================= -->
+  <!-- PESTAÑA 7: PROMPTS                                        -->
+  <!-- ========================================================= -->
+  <section class="tab-panel" data-t="Prompts">
+    <div class="card">
+      <h2>Prompts y Plantillas Reutilizables del Tutorial</h2>
+      <p>En esta sección se reúnen todas las plantillas, comandos, configuraciones y estructuras reutilizables empleadas a lo largo del curso, indicando exactamente dónde se emplean y con botón de copiado directo.</p>
+    </div>
+
+    <div class="card">
+      <h3>1. Plantilla de Actividad de Diseño de Marca</h3>
+      <p><strong>Dónde se emplea:</strong> Parte I — Capítulo 1 (Qué vamos a aprender) y Capítulo 17 (Adaptar una marca).</p>
+      <div class="code-block">
+        <div class="code-header">
+          <span>Prompt / Ficha de definición de marca</span>
+          <button class="copy-btn" data-copy="Nombre de la marca ficticia: [Escribe tu marca]&#10;Color principal (colorPrimary): [#HEX]&#10;Color de fondo (colorBackground): [#HEX]&#10;Color de texto (colorText): [#HEX]&#10;Color de error (colorDanger): [#HEX]&#10;Tipografía (fontFamily): [Arial, Helvetica, sans-serif]&#10;Radio de bordes (borderRadius): [12px]&#10;Tema base Stripe (theme): [stripe | night | flat]">COPIAR</button>
+        </div>
+        <pre><code>Nombre de la marca ficticia: [Escribe tu marca]
+Color principal (colorPrimary): [#HEX]
+Color de fondo (colorBackground): [#HEX]
+Color de texto (colorText): [#HEX]
+Color de error (colorDanger): [#HEX]
+Tipografía (fontFamily): [Arial, Helvetica, sans-serif]
+Radio de bordes (borderRadius): [12px]
+Tema base Stripe (theme): [stripe | night | flat]</code></pre>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>2. Comandos de Inicialización de Entorno Windows 11</h3>
+      <p><strong>Dónde se emplea:</strong> Parte II — Capítulo 6 (Preparar Windows 11) y Parte III — Capítulo 8 (Inicializar npm).</p>
+      <div class="code-block">
+        <div class="code-header">
+          <span>PowerShell — Creación de proyecto e instalación</span>
+          <button class="copy-btn" data-copy='New-Item -ItemType Directory -Force "$HOME\stripe-appearance-lab"&#10;Set-Location "$HOME\stripe-appearance-lab"&#10;npm init -y&#10;npm install express stripe dotenv&#10;code .'>COPIAR</button>
+        </div>
+        <pre><code>New-Item -ItemType Directory -Force "$HOME\stripe-appearance-lab"
+Set-Location "$HOME\stripe-appearance-lab"
+npm init -y
+npm install express stripe dotenv
+code .</code></pre>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>3. Plantilla Base de Configuración Appearance API (Taller Demo / Norte Claro)</h3>
+      <p><strong>Dónde se emplea:</strong> Parte III — Capítulo 10.4 (<code>public/app.js</code>), Parte IV — Capítulo 17 y Parte V — Caso 7.</p>
+      <div class="code-block">
+        <div class="code-header">
+          <span>JavaScript — Objeto appearance completo</span>
+          <button class="copy-btn" data-copy="const appearance = {&#10;  theme: 'stripe',&#10;  inputs: 'spaced',&#10;  labels: 'above',&#10;  variables: {&#10;    colorPrimary: '#147d69',&#10;    colorBackground: '#ffffff',&#10;    colorText: '#172b36',&#10;    colorTextSecondary: '#64777c',&#10;    colorDanger: '#b4233c',&#10;    colorSuccess: '#16845b',&#10;    fontFamily: 'Arial, Helvetica, sans-serif',&#10;    fontSizeBase: '16px',&#10;    spacingUnit: '4px',&#10;    borderRadius: '12px',&#10;    inputColorBorder: '#cbd9d9',&#10;    inputFocusColorBorder: '#147d69',&#10;    focusOutline: '2px solid #147d69'&#10;  },&#10;  rules: {&#10;    '.Input': { boxShadow: 'none' },&#10;    '.Input:focus': { boxShadow: '0 0 0 2px rgba(20, 125, 105, 0.18)' },&#10;    '.Label': { fontWeight: '600' },&#10;    '.Input--invalid': { boxShadow: '0 0 0 2px var(--colorDanger)' }&#10;  }&#10;};">COPIAR</button>
+        </div>
+        <pre><code>const appearance = {
+  theme: 'stripe',
+  inputs: 'spaced',
+  labels: 'above',
+  variables: {
+    colorPrimary: '#147d69',
+    colorBackground: '#ffffff',
+    colorText: '#172b36',
+    colorTextSecondary: '#64777c',
+    colorDanger: '#b4233c',
+    colorSuccess: '#16845b',
+    fontFamily: 'Arial, Helvetica, sans-serif',
+    fontSizeBase: '16px',
+    spacingUnit: '4px',
+    borderRadius: '12px',
+    inputColorBorder: '#cbd9d9',
+    inputFocusColorBorder: '#147d69',
+    focusOutline: '2px solid #147d69'
+  },
+  rules: {
+    '.Input': { boxShadow: 'none' },
+    '.Input:focus': { boxShadow: '0 0 0 2px rgba(20, 125, 105, 0.18)' },
+    '.Label': { fontWeight: '600' },
+    '.Input--invalid': { boxShadow: '0 0 0 2px var(--colorDanger)' }
+  }
+};</code></pre>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>4. Plantilla Dual Tema Claro / Tema Oscuro</h3>
+      <p><strong>Dónde se emplea:</strong> Parte V — Caso 6 (Crear una apariencia clara y otra oscura).</p>
+      <div class="code-block">
+        <div class="code-header">
+          <span>JavaScript — appearanceLight y appearanceDark</span>
+          <button class="copy-btn" data-copy="const appearanceLight = {&#10;  theme: 'stripe',&#10;  variables: {&#10;    colorPrimary: '#147d69',&#10;    colorBackground: '#ffffff',&#10;    colorText: '#172b36',&#10;    colorDanger: '#b4233c',&#10;    fontFamily: 'Arial, sans-serif',&#10;    fontSizeBase: '16px',&#10;    borderRadius: '10px'&#10;  }&#10;};&#10;&#10;const appearanceDark = {&#10;  theme: 'night',&#10;  variables: {&#10;    colorPrimary: '#75d7bd',&#10;    colorBackground: '#17242a',&#10;    colorText: '#f3f7f6',&#10;    colorDanger: '#ff8292',&#10;    fontFamily: 'Arial, sans-serif',&#10;    fontSizeBase: '16px',&#10;    borderRadius: '10px'&#10;  }&#10;};">COPIAR</button>
+        </div>
+        <pre><code>const appearanceLight = {
+  theme: 'stripe',
+  variables: {
+    colorPrimary: '#147d69',
+    colorBackground: '#ffffff',
+    colorText: '#172b36',
+    colorDanger: '#b4233c',
+    fontFamily: 'Arial, sans-serif',
+    fontSizeBase: '16px',
+    borderRadius: '10px'
+  }
+};
+
+const appearanceDark = {
+  theme: 'night',
+  variables: {
+    colorPrimary: '#75d7bd',
+    colorBackground: '#17242a',
+    colorText: '#f3f7f6',
+    colorDanger: '#ff8292',
+    fontFamily: 'Arial, sans-serif',
+    fontSizeBase: '16px',
+    borderRadius: '10px'
+  }
+};</code></pre>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>5. Plantilla de Documentación de Decisiones (README.md)</h3>
+      <p><strong>Dónde se emplea:</strong> Parte V — Caso 10 (Versión profesional documentada) y Parte IX — Capítulo 22 (Proyecto final).</p>
+      <div class="code-block">
+        <div class="code-header">
+          <span>Markdown — Documento de decisiones técnicas</span>
+          <button class="copy-btn" data-copy="# Proyecto Stripe Elements — Documento de Decisiones&#10;- Nombre de marca:&#10;- Paleta y razón de cada color:&#10;- Tema seleccionado:&#10;- Variables modificadas:&#10;- Reglas añadidas:&#10;- Pruebas realizadas:&#10;- Limitaciones:&#10;- Qué harías antes de producción:">COPIAR</button>
+        </div>
+        <pre><code># Proyecto Stripe Elements — Documento de Decisiones
+- Nombre de marca:
+- Paleta y razón de cada color:
+- Tema seleccionado:
+- Variables modificadas:
+- Reglas añadidas:
+- Pruebas realizadas:
+- Limitaciones:
+- Qué harías antes de producción:</code></pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================= -->
+  <!-- PESTAÑA 8: 33 PREGUNTAS (Q&A)                             -->
+  <!-- ========================================================= -->
+  <section class="tab-panel" data-t="33 Preguntas (Q&A)">
+    <div class="card">
+      <h2>Parte VII. 33 Preguntas y Respuestas</h2>
+      <p>Ordenadas progresivamente por nivel de dificultad: <strong>Nivel 1 (Principiante)</strong>, <strong>Nivel 2 (Intermedio)</strong> y <strong>Nivel 3 (Avanzado)</strong>.</p>
+      <div class="qa-controls">
+        <button class="btn-action primary" id="expandAllQaBtn">+ Desplegar todas respuestas</button>
+        <button class="btn-action" id="collapseAllQaBtn">- Plegar todas las respuestas</button>
+      </div>
+    </div>
+
+    <div id="qaContainer">
+      <!-- Nivel 1 -->
+      <div class="card">
+        <h3>Nivel 1 — Principiante (Preguntas 1 a 11)</h3>
+
+        <details class="qa-item">
+          <summary>1. ¿Qué es Stripe Elements?</summary>
+          <div class="qa-body">Es una colección de componentes de interfaz preparados por Stripe para integrar formularios y datos de pago en una web. Evita que tengas que programar desde cero todos los campos sensibles.</div>
+        </details>
+
+        <details class="qa-item">
+          <summary>2. ¿Qué hace Appearance API?</summary>
+          <div class="qa-body">Permite personalizar la apariencia de Elements compatibles: temas, colores, fuentes, bordes, espaciado y reglas para componentes públicos. No crea el pago ni sustituye la lógica del servidor.</div>
+        </details>
+
+        <details class="qa-item">
+          <summary>3. ¿Qué diferencia hay entre Stripe.js y Elements?</summary>
+          <div class="qa-body">Stripe.js es la biblioteca JavaScript que permite utilizar Stripe desde el navegador. Elements es el sistema de componentes que se crea y gestiona con esa biblioteca.</div>
+        </details>
+
+        <details class="qa-item">
+          <summary>4. ¿Qué es Payment Element?</summary>
+          <div class="qa-body">Es un componente que puede presentar varios métodos de pago en una sola interfaz integrada en la web.</div>
+        </details>
+
+        <details class="qa-item">
+          <summary>5. ¿Necesito saber programar para utilizarlo?</summary>
+          <div class="qa-body">Para utilizarlo en un proyecto real sí necesitas aprender conceptos básicos o trabajar con alguien que los domine. Este curso parte de cero, pero no convierte una integración de pagos en una operación sin conocimientos técnicos.</div>
+        </details>
+
+        <details class="qa-item">
+          <summary>6. ¿Puedo cambiar el color principal?</summary>
+          <div class="qa-body">Sí. Puedes utilizar <code>colorPrimary</code> dentro de <code>variables</code>. Comprueba el contraste y recuerda que no todos los componentes necesariamente muestran ese color del mismo modo.</div>
+        </details>
+
+        <details class="qa-item">
+          <summary>7. ¿Qué temas ofrece Stripe?</summary>
+          <div class="qa-body">La documentación de Appearance API consultada enumera <code>stripe</code>, <code>night</code> y <code>flat</code>.</div>
+        </details>
+
+        <details class="qa-item">
+          <summary>8. ¿Puedo usar mi propia tipografía?</summary>
+          <div class="qa-body">Sí. Puedes definir <code>fontFamily</code> y, si necesitas cargar una fuente personalizada, proporcionar la opción <code>fonts</code> al crear Elements, siguiendo la documentación de Stripe.js.</div>
+        </details>
+
+        <details class="qa-item">
+          <summary>9. ¿Qué diferencia hay entre CSS y Appearance API?</summary>
+          <div class="qa-body">CSS controla tu página y sus contenedores. Appearance API controla los estilos de los componentes Stripe compatibles. Los campos seguros no se comportan como elementos HTML normales de tu documento.</div>
+        </details>
+
+        <details class="qa-item">
+          <summary>10. ¿Qué es la clave publicable?</summary>
+          <div class="qa-body">Es una clave identificada por el prefijo <code>pk_</code>. Stripe permite exponerla en el navegador para inicializar Stripe.js y Elements. No tiene los permisos de una clave secreta.</div>
+        </details>
+
+        <details class="qa-item">
+          <summary>11. ¿Puedo probar sin cobrar dinero?</summary>
+          <div class="qa-body">Sí. Utiliza un sandbox y claves de prueba. Stripe ofrece tarjetas de prueba para simular operaciones. No introduzcas datos de tarjetas reales.</div>
+        </details>
+      </div>
+
+      <!-- Nivel 2 -->
+      <div class="card">
+        <h3>Nivel 2 — Intermedio (Preguntas 12 a 22)</h3>
+
+        <details class="qa-item">
+          <summary>12. ¿Dónde se pasa el objeto appearance?</summary>
+          <div class="qa-body">Al crear la instancia Elements, por ejemplo <code>stripe.elements({clientSecret, appearance})</code>. No se pasa como una hoja CSS ni como argumento de <code>mount</code>.</div>
+        </details>
+
+        <details class="qa-item">
+          <summary>13. ¿Qué diferencia hay entre variables y reglas?</summary>
+          <div class="qa-body">Las variables son valores generales que afectan a varias partes. Las reglas permiten ajustar selectores públicos concretos y sus estados admitidos.</div>
+        </details>
+
+        <details class="qa-item">
+          <summary>14. ¿Puedo escribir cualquier selector CSS?</summary>
+          <div class="qa-body">No. Stripe publica nombres de clases, estados y pseudoclases permitidos. No admite clases privadas ni relaciones descendiente como <code>.Tab .TabLabel</code>.</div>
+        </details>
+
+        <details class="qa-item">
+          <summary>15. ¿Puedo usar border-color dentro de rules?</summary>
+          <div class="qa-body">La sintaxis de propiedades se expresa en camelCase, por ejemplo <code>borderColor</code>. Además, la propiedad debe estar permitida para la clase seleccionada.</div>
+        </details>
+
+        <details class="qa-item">
+          <summary>16. ¿Qué es clientSecret?</summary>
+          <div class="qa-body">Es un secreto de cliente asociado a un PaymentIntent o SetupIntent concreto. Se utiliza para completar ese flujo desde el navegador. No es la clave secreta de cuenta, pero debe tratarse con cuidado y no registrarse ni compartirse.</div>
+        </details>
+
+        <details class="qa-item">
+          <summary>17. ¿Por qué necesito backend?</summary>
+          <div class="qa-body">Porque operaciones como crear un PaymentIntent y decidir el importe deben realizarse de forma confiable en el servidor. Allí se guarda la clave secreta.</div>
+        </details>
+
+        <details class="qa-item">
+          <summary>18. ¿Qué significa fontSizeBase?</summary>
+          <div class="qa-body">Es el tamaño tipográfico de referencia del componente. Otras variables de tamaño pueden derivarse de él mediante unidades relativas.</div>
+        </details>
+
+        <details class="qa-item">
+          <summary>19. ¿Puedo cambiar el diseño del formulario completo?</summary>
+          <div class="qa-body">Puedes personalizar muchos aspectos, pero la disposición interna del Element se mantiene dentro de la estructura que Stripe ofrece. No puedes convertirlo en un componente arbitrario.</div>
+        </details>
+
+        <details class="qa-item">
+          <summary>20. ¿Por qué no cambia el campo cuando modifico CSS?</summary>
+          <div class="qa-body">Porque el campo pertenece al componente seguro de Stripe y no al DOM normal de tu página. Utiliza Appearance API para los estilos admitidos.</div>
+        </details>
+
+        <details class="qa-item">
+          <summary>21. ¿Puedo tener tema claro y oscuro?</summary>
+          <div class="qa-body">Sí. Puedes definir dos objetos de apariencia y utilizar uno u otro al crear Elements. El cambio dinámico durante una sesión requiere diseñar la lógica de actualización correspondiente; el ejercicio básico solo selecciona el tema al cargar.</div>
+        </details>
+
+        <details class="qa-item">
+          <summary>22. ¿Payment Element y Checkout son lo mismo?</summary>
+          <div class="qa-body">No. Payment Element es un componente dentro de una experiencia que construyes. Checkout es una solución de checkout de Stripe con su propia API y opciones de personalización.</div>
+        </details>
+      </div>
+
+      <!-- Nivel 3 -->
+      <div class="card">
+        <h3>Nivel 3 — Avanzado (Preguntas 23 a 33)</h3>
+
+        <details class="qa-item">
+          <summary>23. ¿Appearance API funciona con CardElement?</summary>
+          <div class="qa-body">La documentación de Appearance API indica que no admite Elements individuales de método de pago como <code>CardElement</code>. Para esos Elements se utiliza el objeto <code>Style</code>.</div>
+        </details>
+
+        <details class="qa-item">
+          <summary>24. ¿Qué API de pago conviene usar: Payment Intents o Checkout Sessions?</summary>
+          <div class="qa-body">Stripe recomienda Checkout Sessions con Payment Element para la mayoría de integraciones nuevas. Payment Intents es adecuado si necesitas controlar todo el flujo, pero exige implementar por tu cuenta más lógica, como impuestos, descuentos, envío y otros aspectos.</div>
+        </details>
+
+        <details class="qa-item">
+          <summary>25. ¿Puedo aceptar el importe enviado desde el navegador?</summary>
+          <div class="qa-body">No debes confiar en él. El navegador puede ser manipulado. El servidor debe calcular o validar el importe usando datos confiables del pedido.</div>
+        </details>
+
+        <details class="qa-item">
+          <summary>26. ¿Cómo verifico que un pago se ha realizado de verdad?</summary>
+          <div class="qa-body">Consulta el estado del PaymentIntent en el servidor y utiliza webhooks para recibir eventos de Stripe. No confíes exclusivamente en una respuesta visual del navegador.</div>
+        </details>
+
+        <details class="qa-item">
+          <summary>27. ¿Qué ocurre si un método de pago requiere redirección?</summary>
+          <div class="qa-body">El flujo puede llevar al cliente a una página externa de autenticación o autorización y devolverlo después a la URL indicada. Debes implementar y probar correctamente la vuelta al sitio.</div>
+        </details>
+
+        <details class="qa-item">
+          <summary>28. ¿Cómo se cargan fuentes personalizadas?</summary>
+          <div class="qa-body">La opción <code>fonts</code> de la instancia Elements admite fuentes CSS o fuentes personalizadas según el formato documentado por Stripe. Debes alojarlas correctamente, permitir que el navegador las recupere y asignarlas mediante <code>fontFamily</code>.</div>
+        </details>
+
+        <details class="qa-item">
+          <summary>29. ¿Puedo usar rgba() en todas las variables de color?</summary>
+          <div class="qa-body">No. Stripe especifica que <code>colorPrimary</code>, <code>colorBackground</code>, <code>colorText</code>, <code>colorSuccess</code>, <code>colorDanger</code> y <code>colorWarning</code> no admiten <code>rgba()</code> ni <code>var(--myVariable)</code> como valor directo.</div>
+        </details>
+
+        <details class="qa-item">
+          <summary>30. ¿Puedo aplicar padding a cualquier selector?</summary>
+          <div class="qa-body">No. Las reglas de Appearance API tienen una lista de propiedades admitidas por clase. Comprueba la tabla oficial antes de utilizar una propiedad.</div>
+        </details>
+
+        <details class="qa-item">
+          <summary>31. ¿La Appearance API garantiza accesibilidad?</summary>
+          <div class="qa-body">No. Facilita controles visuales, pero la accesibilidad requiere comprobar contraste, foco, legibilidad, teclado y mensajes de error. Una configuración puede ser técnicamente válida y aun así resultar difícil de usar.</div>
+        </details>
+
+        <details class="qa-item">
+          <summary>32. ¿Qué cambia entre Payment Intents y Checkout Sessions en Appearance API?</summary>
+          <div class="qa-body">La documentación de Appearance API tiene variantes específicas. La página consultada indica que la guía principal trata integraciones con Payment Intents y remite a una guía distinta para Checkout Sessions. No reutilices una integración de confirmación como si ambas APIs fueran intercambiables.</div>
+        </details>
+
+        <details class="qa-item">
+          <summary>33. ¿Qué necesito antes de pasar a producción?</summary>
+          <div class="qa-body">Como mínimo: integración segura, claves live protegidas, HTTPS, webhooks verificados, importes calculados en servidor, gestión de errores y estados, pruebas de todos los métodos habilitados, revisión de accesibilidad, política de privacidad y obligaciones legales aplicables, monitorización y un procedimiento de soporte y reembolsos. Este curso no sustituye una auditoría técnica ni legal.</div>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================= -->
+  <!-- PESTAÑA 9: ERRORES Y DIAGNÓSTICO                          -->
+  <!-- ========================================================= -->
+  <section class="tab-panel" data-t="Errores y Diagnóstico">
+    <div class="card">
+      <h2>18. Cómo comprobar que todo funciona (10 pasos)</h2>
+      <ol>
+        <li><strong>Servidor:</strong> Ejecuta <code>npm start</code>. Debe mostrar la dirección local.</li>
+        <li><strong>Página:</strong> Abre <code>http://localhost:4242</code>. Debe aparecer la interfaz exterior.</li>
+        <li><strong>Stripe.js:</strong> Abre las herramientas del navegador con <code>F12</code>, pestaña Consola. Revisa si hay errores de carga.</li>
+        <li><strong>Backend:</strong> La petición a <code>/create-payment-intent</code> debe responder correctamente.</li>
+        <li><strong>PaymentIntent:</strong> El servidor debe crear un objeto en el sandbox.</li>
+        <li><strong>Elements:</strong> Stripe.js debe crear la instancia Elements.</li>
+        <li><strong>Payment Element:</strong> Debe aparecer dentro de <code>#payment-element</code>.</li>
+        <li><strong>Appearance:</strong> Comprueba que el tema y las variables se reflejan.</li>
+        <li><strong>Estados:</strong> Navega con teclado y prueba validaciones.</li>
+        <li><strong>Pago:</strong> Usa exclusivamente valores de prueba y confirma el resultado en el Dashboard.</li>
+      </ol>
+    </div>
+
+    <div class="card">
+      <h2>19. Tabla completa de Errores Habituales</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Síntoma</th>
+              <th>Causa probable</th>
+              <th>Cómo comprobarlo</th>
+              <th>Solución</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>node</code> no se reconoce</td>
+              <td>Node.js no instalado o terminal antigua</td>
+              <td><code>node --version</code></td>
+              <td>Instala Node LTS y abre PowerShell nuevo</td>
+            </tr>
+            <tr>
+              <td><code>npm</code> no se reconoce</td>
+              <td>Instalación incompleta</td>
+              <td><code>npm --version</code></td>
+              <td>Reinstala Node LTS</td>
+            </tr>
+            <tr>
+              <td><code>code</code> no se reconoce</td>
+              <td>VS Code no está en PATH</td>
+              <td><code>code --version</code></td>
+              <td>Reabre terminal o abre carpeta desde VS Code</td>
+            </tr>
+            <tr>
+              <td>La página no abre</td>
+              <td>Servidor detenido o puerto incorrecto</td>
+              <td>Mira la terminal</td>
+              <td>Ejecuta <code>npm start</code> y abre el puerto indicado</td>
+            </tr>
+            <tr>
+              <td>Error al arrancar</td>
+              <td>Dependencias no instaladas</td>
+              <td>Comprueba <code>node_modules</code></td>
+              <td>Ejecuta <code>npm install</code></td>
+            </tr>
+            <tr>
+              <td>Falta clave de prueba</td>
+              <td><code>.env</code> incorrecto</td>
+              <td>Revisa nombre y contenido local</td>
+              <td>Corrige <code>STRIPE_SECRET_KEY</code>; no la compartas</td>
+            </tr>
+            <tr>
+              <td>Clave rechazada</td>
+              <td>Clave incorrecta o de modo equivocado</td>
+              <td>Comprueba prefijo en Dashboard</td>
+              <td>Usa clave secreta del sandbox</td>
+            </tr>
+            <tr>
+              <td>Payment Element no aparece</td>
+              <td>Error de JavaScript, red o <code>clientSecret</code></td>
+              <td>Consola y Network</td>
+              <td>Corrige el primer error real que aparezca</td>
+            </tr>
+            <tr>
+              <td><code>clientSecret</code> no llega</td>
+              <td>Fallo de backend o API</td>
+              <td>Inspecciona respuesta de <code>/create-payment-intent</code></td>
+              <td>Revisa servidor y clave</td>
+            </tr>
+            <tr>
+              <td>Appearance no cambia</td>
+              <td>Objeto no pasado a <code>stripe.elements</code> o archivo equivocado</td>
+              <td>Busca <code>appearance</code> en <code>app.js</code></td>
+              <td>Pásalo en la opción <code>appearance</code>, guarda y recarga</td>
+            </tr>
+            <tr>
+              <td>Regla no funciona</td>
+              <td>Selector o propiedad no admitidos</td>
+              <td>Consulta tabla oficial</td>
+              <td>Utiliza clase pública y propiedad permitida</td>
+            </tr>
+            <tr>
+              <td>Error de sintaxis</td>
+              <td>Coma, llave o comilla incorrecta</td>
+              <td>Consola y editor</td>
+              <td>Revisa el bloque completo</td>
+            </tr>
+            <tr>
+              <td>Pago no se confirma</td>
+              <td>Datos de prueba o método requieren acción</td>
+              <td>Mensaje del Element y Dashboard</td>
+              <td>Sigue el flujo de prueba de Stripe</td>
+            </tr>
+            <tr>
+              <td>Puerto ocupado</td>
+              <td>Otro programa utiliza el puerto</td>
+              <td>Mensaje de terminal</td>
+              <td>Cambia <code>PORT</code> en <code>.env</code> y reinicia</td>
+            </tr>
+            <tr>
+              <td>Fuente no se ve</td>
+              <td>Fuente no disponible o no cargada</td>
+              <td>Network y familia alternativa</td>
+              <td>Usa fuente local o configura <code>fonts</code> correctamente</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Método de diagnóstico en 5 pasos</h3>
+      <ol>
+        <li>Lee el primer error, no el último.</li>
+        <li>Identifica si procede del navegador, servidor o Stripe.</li>
+        <li>Cambia una sola cosa.</li>
+        <li>Guarda y repite.</li>
+        <li>Anota el resultado.</li>
+      </ol>
+    </div>
+
+    <div class="card">
+      <h2>20. Buenas Prácticas Profesionales y Anexo Técnico</h2>
+      <ul>
+        <li><strong>Seguridad:</strong> Nunca publiques <code>sk_test_</code> ni <code>sk_live_</code>; excluye <code>.env</code> de Git; usa HTTPS en producción; nunca aceptes el importe final del navegador como fuente de verdad.</li>
+        <li><strong>Webhooks:</strong> Verifica siempre el estado del pago en el servidor mediante webhooks de Stripe antes de entregar productos o servicios.</li>
+        <li><strong>Separación de responsabilidades:</strong> Frontend (presenta UI y confirma con Stripe.js) · Backend (decide importe, crea PaymentIntent y valida estado) · Stripe (procesa flujo y comunica eventos).</li>
+      </ul>
+      <div class="callout">
+        <strong>Principio final:</strong> Appearance API no consiste en decorar un formulario. Consiste en integrar un componente de pago seguro en una experiencia de marca sin perder de vista los límites técnicos, la accesibilidad ni la seguridad del dinero del cliente.
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================= -->
+  <!-- PESTAÑA 10: GLOSARIO                                      -->
+  <!-- ========================================================= -->
+  <section class="tab-panel" data-t="Glosario">
+    <div class="card">
+      <h2>21. Glosario Completo de Términos</h2>
+      <p>Las definiciones se refieren al uso de cada término en este curso. Los nombres de código se conservan en su escritura oficial.</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Término</th>
+              <th>Traducción o explicación</th>
+              <th>Para qué sirve aquí</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td><code>API</code></td><td>Interfaz de programación de aplicaciones</td><td>Permite que programas se comuniquen</td></tr>
+            <tr><td><code>Appearance API</code></td><td>API de apariencia</td><td>Personaliza Elements compatibles</td></tr>
+            <tr><td><code>Backend</code></td><td>Parte de servidor</td><td>Protege claves y crea el PaymentIntent</td></tr>
+            <tr><td><code>Browser / navegador</code></td><td>Programa para visitar webs</td><td>Muestra el checkout</td></tr>
+            <tr><td><code>camelCase</code></td><td>Convención de nombres con mayúsculas internas</td><td>Sintaxis de propiedades como <code>boxShadow</code></td></tr>
+            <tr><td><code>CardElement</code></td><td>Element de tarjeta individual</td><td>Element antiguo/individual que usa <code>Style</code>, no Appearance API</td></tr>
+            <tr><td><code>Checkout</code></td><td>Proceso de finalización de compra</td><td>Experiencia de pago</td></tr>
+            <tr><td><code>Checkout Sessions API</code></td><td>API de sesiones de checkout</td><td>Alternativa recomendada por Stripe para muchos checkouts</td></tr>
+            <tr><td><code>Client secret / clientSecret</code></td><td>Secreto de cliente</td><td>Permite completar un PaymentIntent concreto</td></tr>
+            <tr><td><code>CSS</code></td><td>Hojas de estilo en cascada</td><td>Diseña la página exterior</td></tr>
+            <tr><td><code>Dashboard</code></td><td>Panel de control</td><td>Gestiona la cuenta Stripe</td></tr>
+            <tr><td><code>DOM</code></td><td>Modelo de objetos del documento</td><td>Estructura de la página en el navegador</td></tr>
+            <tr><td><code>Element</code></td><td>Componente de Stripe</td><td>Campo o interfaz de pago</td></tr>
+            <tr><td><code>Elements</code></td><td>Sistema de componentes de Stripe</td><td>Agrupa y gestiona Elements</td></tr>
+            <tr><td><code>Express</code></td><td>Framework de Node.js</td><td>Crea el servidor web del laboratorio</td></tr>
+            <tr><td><code>Focus</code></td><td>Foco</td><td>Indica qué control está activo</td></tr>
+            <tr><td><code>Font family</code></td><td>Familia tipográfica</td><td>Define la fuente</td></tr>
+            <tr><td><code>Frontend</code></td><td>Parte que ve el usuario</td><td>Página y comportamiento del navegador</td></tr>
+            <tr><td><code>HTTPS</code></td><td>Protocolo seguro de transferencia</td><td>Protege comunicaciones web</td></tr>
+            <tr><td><code>HTML</code></td><td>Lenguaje de marcado de hipertexto</td><td>Estructura la página</td></tr>
+            <tr><td><code>iframe</code></td><td>Marco incrustado</td><td>Aísla contenido de otro origen, usado por componentes seguros</td></tr>
+            <tr><td><code>JavaScript</code></td><td>Lenguaje de programación</td><td>Añade comportamiento al sitio</td></tr>
+            <tr><td><code>JSON</code></td><td>Formato de intercambio de datos</td><td>Transporta respuestas del servidor</td></tr>
+            <tr><td><code>LTS</code></td><td>Soporte a largo plazo</td><td>Rama de Node.js recomendada para estabilidad</td></tr>
+            <tr><td><code>Mount / mount</code></td><td>Montar o insertar</td><td>Coloca el Element en un contenedor</td></tr>
+            <tr><td><code>npm</code></td><td>Gestor de paquetes de Node.js</td><td>Instala dependencias</td></tr>
+            <tr><td><code>Node.js</code></td><td>Entorno para ejecutar JavaScript fuera del navegador</td><td>Ejecuta el backend</td></tr>
+            <tr><td><code>Payment Element</code></td><td>Element de pago</td><td>Muestra métodos de pago</td></tr>
+            <tr><td><code>PaymentIntent</code></td><td>Intención de pago</td><td>Representa el proceso de pago en Stripe</td></tr>
+            <tr><td><code>Payment Intents API</code></td><td>API de intenciones de pago</td><td>Permite controlar el flujo de pago</td></tr>
+            <tr><td><code>Publishable key</code></td><td>Clave publicable</td><td>Inicializa Stripe.js en frontend</td></tr>
+            <tr><td><code>Responsive design</code></td><td>Diseño adaptable</td><td>Ajusta la web a diferentes pantallas</td></tr>
+            <tr><td><code>Rules</code></td><td>Reglas</td><td>Ajustes específicos de componentes</td></tr>
+            <tr><td><code>Sandbox</code></td><td>Entorno aislado de pruebas</td><td>Simula pagos sin dinero real</td></tr>
+            <tr><td><code>SDK</code></td><td>Kit de desarrollo de software</td><td>Conjunto de herramientas para integrar un servicio</td></tr>
+            <tr><td><code>Secret key</code></td><td>Clave secreta</td><td>Autentica operaciones de servidor</td></tr>
+            <tr><td><code>Selector</code></td><td>Patrón que identifica un componente</td><td>Aplica una regla a clases públicas</td></tr>
+            <tr><td><code>Stripe</code></td><td>Plataforma de pagos</td><td>Procesa y gestiona pagos</td></tr>
+            <tr><td><code>Stripe Elements</code></td><td>Componentes de interfaz de Stripe</td><td>Recoge datos de pago</td></tr>
+            <tr><td><code>Stripe.js</code></td><td>Biblioteca JavaScript de Stripe</td><td>Integra Stripe en el navegador</td></tr>
+            <tr><td><code>Theme</code></td><td>Tema</td><td>Base visual de Appearance API</td></tr>
+            <tr><td><code>Variable</code></td><td>Valor de configuración</td><td>Ajusta apariencia general</td></tr>
+            <tr><td><code>Webhook</code></td><td>Notificación HTTP de un evento</td><td>Permite verificar eventos de pago desde servidor</td></tr>
+            <tr><td><code>Windows PowerShell</code></td><td>Terminal y lenguaje de automatización de Windows</td><td>Ejecuta comandos del curso</td></tr>
+            <tr><td><code>VS Code</code></td><td>Visual Studio Code</td><td>Editor de archivos</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Acrónimos y abreviaturas</h3>
+      <ul>
+        <li><strong>API:</strong> Application Programming Interface.</li>
+        <li><strong>CSS:</strong> Cascading Style Sheets.</li>
+        <li><strong>DOM:</strong> Document Object Model.</li>
+        <li><strong>HTML:</strong> HyperText Markup Language.</li>
+        <li><strong>HTTPS:</strong> HyperText Transfer Protocol Secure.</li>
+        <li><strong>JSON:</strong> JavaScript Object Notation.</li>
+        <li><strong>LTS:</strong> Long-Term Support.</li>
+        <li><strong>SDK:</strong> Software Development Kit.</li>
+        <li><strong>URL:</strong> Uniform Resource Locator.</li>
+        <li><strong>UI:</strong> User Interface, interfaz de usuario.</li>
+        <li><strong>UX:</strong> User Experience, experiencia de usuario.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ========================================================= -->
+  <!-- PESTAÑA 11: FUENTES                                       -->
+  <!-- ========================================================= -->
+  <section class="tab-panel" data-t="Fuentes">
+    <div class="card">
+      <h2>24. Fuentes Consultadas</h2>
+      <p>Documentación oficial de Stripe, Node.js y Visual Studio Code consultada el <strong>24/11/2026</strong>. No se han utilizado tutoriales de terceros para establecer la sintaxis de Appearance API.</p>
+    </div>
+
+    <div class="card">
+      <h3>1. Documentación oficial de Stripe</h3>
+      <div id="stripeSourcesList"></div>
+    </div>
+
+    <div class="card">
+      <h3>2. Herramientas de desarrollo</h3>
+      <div id="toolsSourcesList"></div>
+    </div>
+  </section>
+
+  <!-- ========================================================= -->
+  <!-- PESTAÑA 12: CRÉDITOS                                      -->
+  <!-- ========================================================= -->
+  <section class="tab-panel" data-t="Créditos">
+    <div class="card" style="text-align:center;">
+      <h2>Créditos y Autoría</h2>
+
+      <div class="svg-stage" id="creditsSvgContainer" style="margin:14px auto;"></div>
+
+      <p style="color:var(--muted);font-size:0.9rem;max-width:540px;margin:10px auto;">
+        Ilustración vectorial animada del Payment Element de Stripe transformando sus variables, reglas y tokens de apariencia en tiempo real.
+      </p>
+
+      <div class="credits-author">Rubén Sbarsky</div>
+      <p style="font-size:1.1rem;font-weight:700;color:var(--text);margin-bottom:14px;">Autor del tutorial</p>
+
+      <div class="callout" style="text-align:left;max-width:600px;margin:16px auto;">
+        <p><strong>Tutorial Profesional de Stripe Elements: Appearance API</strong></p>
+        <p><strong>Fecha de creación:</strong> 24/11/2026 — 08:35:05</p>
+        <p><strong>Versión del archivo:</strong> V001 (<code>tutorial_stripe_elements_appearance_api_V001.html</code>)</p>
+        <p><strong>Metodología:</strong> Desarrollo autónomo single-file sin dependencias externas, optimizado para dispositivos móviles (incluyendo Samsung Galaxy A02s) y escritorio, con soporte de impresión A4.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Navegación inferior fija entre pestañas -->
+  <div class="tab-footer-nav" id="tabFooterNav">
+    <button class="nav-step-btn prev" id="prevTabBtn">← Anterior</button>
+    <button class="nav-step-btn next" id="nextTabBtn">Siguiente →</button>
+  </div>
+
+</main>
+
+<!-- Botones Flotantes Arrastrables -->
+<button class="float-btn" id="floatHomeBtn" aria-label="Ir a Inicio" title="Arrastra para mover o pulsa para ir a Inicio">🏠 INICIO</button>
+<button class="float-btn" id="floatTopBtn" aria-label="Subir al comienzo de la pestaña" title="Arrastra para mover o pulsa para ir arriba">↑ ARRIBA</button>
+
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(() => {
+  'use strict';
+
+  /* ===========================================================
+     1. ESTADO GLOBAL Y PERSISTENCIA SEGURA
+     =========================================================== */
+  const STORAGE_KEY = 'stripe_appearance_tutorial_v001';
+  const defaultState = {
+    activeTab: 0,
+    theme: 'dark',
+    fontScale: 1,
+    checkedSkills: {}
+  };
+
+  function loadState() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return { ...defaultState };
+      return { ...defaultState, ...JSON.parse(raw) };
+    } catch (e) {
+      return { ...defaultState };
+    }
+  }
+
+  function saveState(state) {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    } catch (e) {
+      /* Ignorar si localStorage está restringido */
+    }
+  }
+
+  const appState = loadState();
+
+  /* ===========================================================
+     2. NOTIFICACIONES TOAST Y PORTAPAPELES
+     =========================================================== */
+  const toastEl = document.getElementById('toast');
+  let toastTimer = null;
+
+  function showToast(msg) {
+    toastEl.textContent = msg;
+    toastEl.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toastEl.classList.remove('show'), 2600);
+  }
+
+  function copyTextToClipboard(text) {
+    try {
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      textarea.setAttribute('readonly', '');
+      textarea.style.position = 'fixed';
+      textarea.style.left = '-9999px';
+      document.body.appendChild(textarea);
+      textarea.select();
+      const ok = document.execCommand('copy');
+      document.body.removeChild(textarea);
+      if (ok) {
+        showToast('✓ Copiado al portapapeles');
+      } else {
+        showToast('No se pudo copiar automáticamente. Selecciona el texto manualmente.');
+      }
+    } catch (err) {
+      showToast('Error al copiar. Selecciona el texto manualmente.');
+    }
+  }
+
+  function bindCopyButtons() {
+    document.querySelectorAll('.copy-btn[data-copy]').forEach(btn => {
+      btn.addEventListener('click', () => copyTextToClipboard(btn.getAttribute('data-copy')));
+    });
+
+    const codePairs = [
+      ['copyServerBtn', 'codeServer'],
+      ['copyHtmlBtn', 'codeHtml'],
+      ['copyCssBtn', 'codeCss'],
+      ['copyJsBtn', 'codeJs'],
+      ['copyReadmeBtn', 'codeReadme'],
+      ['copyLumenBtn', 'codeLumen']
+    ];
+
+    codePairs.forEach(([btnId, codeId]) => {
+      const btn = document.getElementById(btnId);
+      const codeEl = document.getElementById(codeId);
+      if (btn && codeEl) {
+        btn.addEventListener('click', () => copyTextToClipboard(codeEl.textContent));
+      }
+    });
+  }
+
+  /* ===========================================================
+     3. GESTIÓN DE SVG ÚNICO ANIMADO (INICIO Y CRÉDITOS)
+     =========================================================== */
+  let svgTemplateMarkup = '';
+  let animPaused = false;
+
+  function initSvgTemplate() {
+    const tpl = document.getElementById('heroSvgTemplate');
+    if (tpl) {
+      svgTemplateMarkup = tpl.innerHTML;
+      tpl.remove();
+    }
+  }
+
+  function mountSvgInstance(containerId, instancePrefix) {
+    const container = document.getElementById(containerId);
+    if (!container || !svgTemplateMarkup) return;
+
+    const uniqueHtml = svgTemplateMarkup.replace(/__GID_([a-zA-Z0-9_]+)__/g, (_, name) => `${instancePrefix}_${name}`);
+    container.innerHTML = uniqueHtml;
+
+    const svgEl = container.querySelector('svg');
+    if (svgEl && animPaused) {
+      svgEl.classList.add('svg-paused');
+    }
+  }
+
+  function mountAllSvgs() {
+    mountSvgInstance('heroSvgContainer', 'heroInst');
+    mountSvgInstance('creditsSvgContainer', 'credInst');
+  }
+
+  function ensureVisibleSvgMounted() {
+    if (appState.activeTab === 0) {
+      const c = document.getElementById('heroSvgContainer');
+      if (c && !c.querySelector('svg')) mountSvgInstance('heroSvgContainer', 'heroInst');
+    } else if (appState.activeTab === 12) {
+      const c = document.getElementById('creditsSvgContainer');
+      if (c && !c.querySelector('svg')) mountSvgInstance('creditsSvgContainer', 'credInst');
+    }
+  }
+
+  /* ===========================================================
+     4. NAVEGACIÓN SPA, PESTAÑAS E ÍNDICE LATERAL (#dr)
+     =========================================================== */
+  const secs = Array.from(document.querySelectorAll('section.tab-panel'));
+  const tabChips = Array.from(document.querySelectorAll('nav.tabs-bar .chip[data-tab]'));
+  const dr = document.getElementById('dr');
+  const drawerLinks = document.getElementById('drawerLinks');
+  const mb = document.getElementById('mb');
+  const prevTabBtn = document.getElementById('prevTabBtn');
+  const nextTabBtn = document.getElementById('nextTabBtn');
+
+  function toggleDrawer(forceState) {
+    const isOpen = typeof forceState === 'boolean' ? forceState : !dr.classList.contains('o');
+    dr.classList.toggle('o', isOpen);
+    mb.setAttribute('aria-expanded', String(isOpen));
+  }
+
+  function buildDrawerIndex() {
+    drawerLinks.innerHTML = '';
+    secs.forEach((s, i) => {
+      const a = document.createElement('a');
+      a.href = '#';
+      const title = s.dataset.t || (s.querySelector('h2') ? s.querySelector('h2').textContent : `Sección ${i}`);
+      a.textContent = (i ? `${i}. ` : '') + title;
+      a.addEventListener('click', (e) => {
+        e.preventDefault();
+        go(i);
+        toggleDrawer(false);
+      });
+      drawerLinks.appendChild(a);
+    });
+  }
+
+  function updateBottomNavButtons(index) {
+    if (index <= 0) {
+      prevTabBtn.disabled = true;
+      prevTabBtn.textContent = '← Inicio';
+    } else {
+      prevTabBtn.disabled = false;
+      const prevTitle = secs[index - 1].dataset.t || 'Anterior';
+      prevTabBtn.textContent = `← ${prevTitle}`;
+    }
+
+    if (index >= secs.length - 1) {
+      nextTabBtn.disabled = true;
+      nextTabBtn.textContent = 'Fin del tutorial';
+    } else {
+      nextTabBtn.disabled = false;
+      const nextTitle = secs[index + 1].dataset.t || 'Siguiente';
+      nextTabBtn.textContent = `${nextTitle} →`;
+    }
+  }
+
+  function go(index) {
+    const targetIdx = Math.max(0, Math.min(secs.length - 1, Number(index) || 0));
+    appState.activeTab = targetIdx;
+    saveState(appState);
+
+    secs.forEach((sec, i) => sec.classList.toggle('active', i === targetIdx));
+    tabChips.forEach((chip, i) => {
+      const isAct = i === targetIdx;
+      chip.classList.toggle('active', isAct);
+      if (isAct) {
+        chip.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+      }
+    });
+
+    Array.from(drawerLinks.children).forEach((a, j) => a.classList.toggle('on', j === targetIdx));
+
+    if (targetIdx === 0) mountSvgInstance('heroSvgContainer', 'heroInst');
+    if (targetIdx === 12) mountSvgInstance('creditsSvgContainer', 'credInst');
+
+    updateBottomNavButtons(targetIdx);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    updateReadingProgress();
+  }
+
+  window.navigateToTab = go;
+
+  tabChips.forEach(chip => {
+    chip.addEventListener('click', () => go(Number(chip.dataset.tab)));
+  });
+
+  prevTabBtn.addEventListener('click', () => {
+    if (appState.activeTab > 0) go(appState.activeTab - 1);
+  });
+
+  nextTabBtn.addEventListener('click', () => {
+    if (appState.activeTab < secs.length - 1) go(appState.activeTab + 1);
+  });
+
+  mb.addEventListener('click', () => toggleDrawer());
+  document.getElementById('closeDrawerBtn').addEventListener('click', () => toggleDrawer(false));
+
+  const homeIdxBtn = document.getElementById('ix');
+  if (homeIdxBtn) {
+    homeIdxBtn.addEventListener('click', () => toggleDrawer(true));
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') toggleDrawer(false);
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('#dr, #mb, #ix')) toggleDrawer(false);
+  });
+
+  /* ===========================================================
+     5. PREGUNTAS Y RESPUESTAS (Q&A) DESPLEGAR / PLEGAR
+     =========================================================== */
+  const expandAllQaBtn = document.getElementById('expandAllQaBtn');
+  const collapseAllQaBtn = document.getElementById('collapseAllQaBtn');
+
+  function setAllQaOpen(isOpen) {
+    document.querySelectorAll('#qaContainer details.qa-item').forEach(det => {
+      det.open = isOpen;
+    });
+  }
+
+  expandAllQaBtn.addEventListener('click', () => setAllQaOpen(true));
+  collapseAllQaBtn.addEventListener('click', () => setAllQaOpen(false));
+
+  /* ===========================================================
+     6. SIMULADOR APPEARANCE API EN TIEMPO REAL
+     =========================================================== */
+  const simTheme = document.getElementById('simTheme');
+  const simPrimary = document.getElementById('simPrimary');
+  const simRadius = document.getElementById('simRadius');
+  const simRadiusVal = document.getElementById('simRadiusVal');
+  const simPreviewBox = document.getElementById('simPreviewBox');
+  const simTab1 = document.getElementById('simTab1');
+  const simTab2 = document.getElementById('simTab2');
+  const simInput = document.getElementById('simInput');
+  const simPayBtn = document.getElementById('simPayBtn');
+
+  function updateSimulator() {
+    const theme = simTheme.value;
+    const primary = simPrimary.value;
+    const radius = `${simRadius.value}px`;
+    simRadiusVal.textContent = radius;
+
+    if (theme === 'night') {
+      simPreviewBox.style.background = '#17242a';
+      simPreviewBox.style.color = '#f3f7f6';
+      simInput.style.background = '#0f172a';
+      simInput.style.color = '#f3f7f6';
+      simInput.style.borderColor = '#334155';
+    } else if (theme === 'flat') {
+      simPreviewBox.style.background = '#f8fafc';
+      simPreviewBox.style.color = '#0f172a';
+      simInput.style.background = '#e2e8f0';
+      simInput.style.color = '#0f172a';
+      simInput.style.borderColor = 'transparent';
+    } else {
+      simPreviewBox.style.background = '#ffffff';
+      simPreviewBox.style.color = '#172b36';
+      simInput.style.background = '#ffffff';
+      simInput.style.color = '#172b36';
+      simInput.style.borderColor = '#cbd9d9';
+    }
+
+    simTab1.style.borderColor = primary;
+    simTab1.style.borderRadius = radius;
+    simTab2.style.borderRadius = radius;
+    simInput.style.borderRadius = radius;
+    simPayBtn.style.background = primary;
+    simPayBtn.style.borderRadius = radius;
+  }
+
+  [simTheme, simPrimary, simRadius].forEach(el => el.addEventListener('input', updateSimulator));
+
+  /* ===========================================================
+     7. CHECKLIST AUTOEVALUACIÓN PERSISTENTE
+     =========================================================== */
+  const skillsList = [
+    'Explicar qué es Stripe Elements.',
+    'Diferenciar Stripe.js y Payment Element.',
+    'Explicar la función de Appearance API.',
+    'Diferenciar CSS exterior y apariencia interna.',
+    'Crear y ejecutar un proyecto Node.js.',
+    'Explicar frontend y backend.',
+    'Proteger la clave secreta.',
+    'Crear un PaymentIntent de prueba.',
+    'Elegir un tema.',
+    'Modificar variables.',
+    'Crear reglas con selectores públicos.',
+    'Probar foco y error.',
+    'Ajustar tipografía y legibilidad.',
+    'Comprobar el pago en el sandbox.',
+    'Explicar por qué se necesitan webhooks en producción.'
+  ];
+
+  function renderChecklist() {
+    const container = document.getElementById('checklistContainer');
+    if (!container) return;
+    container.innerHTML = '';
+    skillsList.forEach((label, idx) => {
+      const row = document.createElement('label');
+      row.className = 'check-item';
+      const cb = document.createElement('input');
+      cb.type = 'checkbox';
+      cb.checked = Boolean(appState.checkedSkills[idx]);
+      cb.addEventListener('change', () => {
+        appState.checkedSkills[idx] = cb.checked;
+        saveState(appState);
+      });
+      const span = document.createElement('span');
+      span.textContent = label;
+      row.appendChild(cb);
+      row.appendChild(span);
+      container.appendChild(row);
+    });
+  }
+
+  /* ===========================================================
+     8. RENDERIZADO DE FUENTES CON BOTÓN "ABRIR EN NUEVA VENTANA"
+     =========================================================== */
+  const stripeSources = [
+    { title: 'Elements Appearance API', desc: 'Temas, variables, reglas, selectores, estados y propiedades admitidas.', url: 'https://docs.stripe.com/elements/appearance-api' },
+    { title: 'Stripe Payment Element', desc: 'Funciones del Payment Element, métodos de pago, layouts y APIs compatibles.', url: 'https://docs.stripe.com/payments/payment-element' },
+    { title: 'Build an advanced integration with Elements and the Payment Intents API', desc: 'Cuándo usar Payment Intents y advertencia sobre Checkout Sessions.', url: 'https://docs.stripe.com/payments/advanced' },
+    { title: 'Create an Elements instance', desc: 'Opciones de stripe.elements, clientSecret, appearance y fonts.', url: 'https://docs.stripe.com/js/elements_object/create' },
+    { title: 'The Style object', desc: 'Alternativa de personalización para Elements individuales como CardElement.', url: 'https://docs.stripe.com/js/appendix/style' },
+    { title: 'API keys', desc: 'Tipos de claves, prefijos, entornos de prueba y protección de claves.', url: 'https://docs.stripe.com/keys' },
+    { title: 'Testing', desc: 'Sandbox, tarjetas de prueba y simulación de pagos.', url: 'https://docs.stripe.com/testing' },
+    { title: 'Accept a payment', desc: 'Opciones de integración para aceptar pagos.', url: 'https://docs.stripe.com/payments/accept-a-payment' },
+    { title: 'Customize the appearance of Checkout', desc: 'Variante de personalización para Checkout Sessions.', url: 'https://docs.stripe.com/payments/checkout/customization/appearance' },
+    { title: 'Best practices for managing secret API keys', desc: 'Prácticas para proteger claves secretas.', url: 'https://docs.stripe.com/keys-best-practices' },
+    { title: 'Webhooks', desc: 'Recepción de eventos para verificar el estado de operaciones.', url: 'https://docs.stripe.com/webhooks' }
+  ];
+
+  const toolSources = [
+    { title: 'Node.js — Download', desc: 'Descarga de versiones LTS y paquetes para Windows.', url: 'https://nodejs.org/en/download/' },
+    { title: 'Visual Studio Code — Download', desc: 'Descarga del editor.', url: 'https://code.visualstudio.com/' },
+    { title: 'Visual Studio Code — Install on Windows', desc: 'Pasos de instalación en Windows y configuración de PATH.', url: 'https://code.visualstudio.com/docs/setup/windows' },
+    { title: 'Express — Getting started', desc: 'Conceptos y uso del framework de servidor.', url: 'https://expressjs.com/en/starter/installing.html' },
+    { title: 'npm — Documentation', desc: 'Gestión de paquetes y dependencias.', url: 'https://docs.npmjs.com/' }
+  ];
+
+  function renderSourceCards(list, targetId) {
+    const container = document.getElementById(targetId);
+    if (!container) return;
+    container.innerHTML = '';
+    list.forEach(item => {
+      const box = document.createElement('div');
+      box.className = 'ext-link-box';
+      box.innerHTML = `
+        <div class="ext-link-info">
+          <strong>${item.title}</strong>
+          <div style="font-size:0.84rem;color:var(--muted);margin:2px 0;">${item.desc}</div>
+          <span class="ext-link-url">${item.url}</span>
+        </div>
+        <div class="ext-link-actions">
+          <a href="${item.url}" target="_blank" rel="noopener noreferrer" class="btn-open-new">Abrir enlace en nueva ventana</a>
+          <button class="copy-btn" type="button">COPIAR</button>
+        </div>
+      `;
+      box.querySelector('.copy-btn').addEventListener('click', () => copyTextToClipboard(item.url));
+      container.appendChild(box);
+    });
+  }
+
+  /* ===========================================================
+     9. BUSCADOR INTERNO EN TODAS LAS PESTAÑAS
+     =========================================================== */
+  const searchInput = document.getElementById('searchInput');
+  const searchResultsPanel = document.getElementById('searchResultsPanel');
+  const searchHitsList = document.getElementById('searchHitsList');
+  const searchCountText = document.getElementById('searchCountText');
+  const clearSearchBtn = document.getElementById('clearSearchBtn');
+
+  function runSearch(query) {
+    const q = query.trim().toLowerCase();
+    if (q.length < 2) {
+      searchResultsPanel.style.display = 'none';
+      return;
+    }
+
+    const hits = [];
+    secs.forEach((sec, tabIdx) => {
+      const tabTitle = sec.dataset.t || `Sección ${tabIdx}`;
+      const blocks = sec.querySelectorAll('h2, h3, p, li, summary, .qa-body, td');
+      blocks.forEach(el => {
+        const txt = el.textContent.trim();
+        if (txt.toLowerCase().includes(q)) {
+          hits.push({ tabIdx, tabTitle, snippet: txt.slice(0, 140) + (txt.length > 140 ? '…' : '') });
+        }
+      });
+    });
+
+    searchHitsList.innerHTML = '';
+    searchCountText.textContent = `${hits.length} coincidencia(s) para "${query}"`;
+    searchResultsPanel.style.display = 'block';
+
+    hits.slice(0, 20).forEach(hit => {
+      const btn = document.createElement('button');
+      btn.className = 'search-hit';
+      btn.innerHTML = `<small>Ir a pestaña: ${hit.tabTitle}</small>${hit.snippet}`;
+      btn.addEventListener('click', () => {
+        go(hit.tabIdx);
+        searchResultsPanel.style.display = 'none';
+      });
+      searchHitsList.appendChild(btn);
+    });
+  }
+
+  searchInput.addEventListener('input', () => runSearch(searchInput.value));
+  clearSearchBtn.addEventListener('click', () => {
+    searchInput.value = '';
+    searchResultsPanel.style.display = 'none';
+  });
+
+  /* ===========================================================
+     10. TEMA, TAMAÑO DE FUENTE, ANIMACIÓN Y PROGRESO LECTURA
+     =========================================================== */
+  function applyVisualPreferences() {
+    document.documentElement.setAttribute('data-theme', appState.theme);
+    document.documentElement.style.setProperty('--font-scale', String(appState.fontScale));
+  }
+
+  document.getElementById('themeToggleBtn').addEventListener('click', () => {
+    appState.theme = appState.theme === 'dark' ? 'light' : 'dark';
+    saveState(appState);
+    applyVisualPreferences();
+  });
+
+  document.getElementById('fontIncBtn').addEventListener('click', () => {
+    appState.fontScale = Math.min(1.3, Number((appState.fontScale + 0.08).toFixed(2)));
+    saveState(appState);
+    applyVisualPreferences();
+  });
+
+  document.getElementById('fontDecBtn').addEventListener('click', () => {
+    appState.fontScale = Math.max(0.84, Number((appState.fontScale - 0.08).toFixed(2)));
+    saveState(appState);
+    applyVisualPreferences();
+  });
+
+  const toggleAnimBtn = document.getElementById('toggleAnimBtn');
+  if (toggleAnimBtn) {
+    toggleAnimBtn.addEventListener('click', () => {
+      animPaused = !animPaused;
+      document.querySelectorAll('.svg-stage svg').forEach(s => s.classList.toggle('svg-paused', animPaused));
+      toggleAnimBtn.textContent = animPaused ? '▶ Reanudar animación' : '⏸ Pausar animación';
+    });
+  }
+
+  const progressBar = document.getElementById('readingProgress');
+  function updateReadingProgress() {
+    const scrollTop = window.scrollY || document.documentElement.scrollTop;
+    const docHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+    const pct = docHeight > 0 ? Math.min(100, Math.max(0, (scrollTop / docHeight) * 100)) : 0;
+    progressBar.style.width = `${pct}%`;
+  }
+
+  window.addEventListener('scroll', updateReadingProgress, { passive: true });
+
+  /* ===========================================================
+     11. BOTONES FLOTANTES ARRASTRABLES (INICIO Y ARRIBA)
+     =========================================================== */
+  function makeDraggableAction(el, onClickAction) {
+    let isDragging = false;
+    let moved = false;
+    let startX = 0;
+    let startY = 0;
+    let origLeft = 0;
+    let origTop = 0;
+
+    el.addEventListener('pointerdown', (e) => {
+      isDragging = true;
+      moved = false;
+      startX = e.clientX;
+      startY = e.clientY;
+      const rect = el.getBoundingClientRect();
+      origLeft = rect.left;
+      origTop = rect.top;
+      el.setPointerCapture(e.pointerId);
+    });
+
+    el.addEventListener('pointermove', (e) => {
+      if (!isDragging) return;
+      const dx = e.clientX - startX;
+      const dy = e.clientY - startY;
+      if (Math.abs(dx) > 5 || Math.abs(dy) > 5) moved = true;
+      if (moved) {
+        const maxX = window.innerWidth - el.offsetWidth - 6;
+        const maxY = window.innerHeight - el.offsetHeight - 6;
+        const nextX = Math.max(6, Math.min(maxX, origLeft + dx));
+        const nextY = Math.max(66, Math.min(maxY, origTop + dy));
+        el.style.left = `${nextX}px`;
+        el.style.top = `${nextY}px`;
+        el.style.right = 'auto';
+        el.style.bottom = 'auto';
+      }
+    });
+
+    el.addEventListener('pointerup', (e) => {
+      if (!isDragging) return;
+      isDragging = false;
+      el.releasePointerCapture(e.pointerId);
+      if (!moved) onClickAction();
+    });
+  }
+
+  makeDraggableAction(document.getElementById('floatHomeBtn'), () => go(0));
+  makeDraggableAction(document.getElementById('floatTopBtn'), () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
+  /* ===========================================================
+     12. IMPRESIÓN / PDF CON RESTAURACIÓN DE ESTADO
+     =========================================================== */
+  function handlePrint() {
+    try {
+      mountAllSvgs();
+      const closedDetails = [];
+      document.querySelectorAll('details.qa-item').forEach((det, idx) => {
+        if (!det.open) {
+          closedDetails.push(idx);
+          det.open = true;
+        }
+      });
+
+      const restoreAfterPrint = () => {
+        const allDets = document.querySelectorAll('details.qa-item');
+        closedDetails.forEach(idx => {
+          if (allDets[idx]) allDets[idx].open = false;
+        });
+        window.removeEventListener('afterprint', restoreAfterPrint);
+      };
+
+      window.addEventListener('afterprint', restoreAfterPrint);
+      window.print();
+    } catch (err) {
+      showToast('Abre este archivo directamente en el navegador y utiliza Ctrl+P o Cmd+P');
+    }
+  }
+
+  document.getElementById('printBtn').addEventListener('click', handlePrint);
+
+  /* ===========================================================
+     13. INICIALIZACIÓN COMPLETA
+     =========================================================== */
+  initSvgTemplate();
+  mountAllSvgs();
+  buildDrawerIndex();
+  renderChecklist();
+  renderSourceCards(stripeSources, 'stripeSourcesList');
+  renderSourceCards(toolSources, 'toolsSourcesList');
+  bindCopyButtons();
+  applyVisualPreferences();
+  go(appState.activeTab);
+  setInterval(ensureVisibleSvgMounted, 2000);
+})();
+</script>
+</body>
+</html>
